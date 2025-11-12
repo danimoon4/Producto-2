@@ -1,0 +1,200 @@
+body {
+  background-image: url('../img/gato.png'); /* o el nombre de tu imagen */
+  background-size: cover;       /* que se estire para cubrir todo */
+  background-position: center;  /* centrada */
+  background-repeat: no-repeat; /* que no se repita */
+  background-attachment: fixed; /* que quede fija al hacer scroll */
+  color: white;
+}
+
+.hero {
+  background-image: url('../img/gato.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 280px;         /* menos alto que antes */
+  position: relative;
+  padding: 2rem 0 0.5rem 0;  /* menos espacio arriba y abajo */
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: transparent; 
+  padding-bottom: 1rem; /* menos espacio debajo del título */
+
+}
+
+.letter-wide { letter-spacing: .08em; }
+
+.btn-pill { 
+  border-radius: 9999px; 
+  padding: .6rem 1.2rem; 
+  font-weight: 700;
+}
+.btn-light-emphasis {
+  background: rgba(255,255,255,.25);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.35);
+}
+.btn-dark-emphasis {
+  background: rgba(0,0,0,.45);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.2);
+}
+.btn-pill.active {
+  outline: 2px solid #fff;
+}
+
+.card-ghost {
+  background: rgba(0, 0, 0, 0.55);     /* transparencia negra */
+  color: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.9); /* borde negro definido */
+  border-radius: 0.8rem;
+  backdrop-filter: blur(10px) saturate(120%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+/* efecto al pasar el mouse */
+.card-ghost:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7); /* más oscuro al pasar el cursor */
+}
+.card-ghost .card-title {
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+.card-ghost .dot {
+  margin-right: .5rem;
+}
+
+.bg-black-50 { background: rgba(0,0,0,.5); }
+main.container {
+  margin-top: -1rem; /* sube las tarjetas un poco */
+}
+
+/* ================== Ajustes específicos para el login y navbar ================== */
+
+/* Página de login: usamos fondo sólido oscuro para que coincida con la imagen que mandaste */
+body.login-page{
+  /* si quieres mantener imagen global, quita las siguientes dos líneas */
+  background-image: none !important;
+  background-color: #2b211b; /* marrón oscuro */
+  color: #fff;
+}
+
+/* Navbar estilo login */
+.login-page .navbar{
+  background: #3a2f28 !important;
+  box-shadow: none;
+}
+.login-page .navbar .nav-link{
+  color: #d8cec6 !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+.login-page .navbar-text{
+  color: #d8cec6 !important;
+}
+
+/* Contenedor centrado como en la imagen */
+.login-wrap{
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 90px); /* resto de alto menos navbar */
+}
+.login-box{
+  width: 720px;
+  max-width: 92vw;
+  border: 2px solid #c8beb5;      /* marco claro */
+  border-radius: 4px;
+  background: #241c17;            /* muy oscuro bajo el panel */
+}
+
+/* Cabecera gris con título centrado y en cursiva */
+.login-head{
+  background: #7a6a60;
+  color: #e7ddd4;
+  text-align: center;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: .02em;
+  padding: 14px 18px;
+  border-bottom: 2px solid #d9cfc6;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+/* Cuerpo: separador superior blanco como en la foto */
+.login-body{
+  padding: 24px 28px;
+  background: #2b211b;             /* coincide con fondo */
+  border-top: 2px solid #ffffff;
+}
+
+/* Pie gris con texto centrado */
+.login-foot{
+  background: #7a6a60;
+  color: #e7ddd4;
+  text-align: center;
+  font-size: 12px;
+  padding: 10px 16px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* Labels blancas y en mayúsculas */
+.label-white{
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+/* Inputs marrón con placeholder en mayúsculas blanco */
+.input-brown{
+  background: #b37a63;           /* marrón claro del input */
+  color: #fff;
+  border: 2px solid #7f5545;     /* borde más oscuro */
+  border-radius: 8px;
+  height: 44px;
+  padding: .5rem .75rem;
+  box-sizing: border-box;
+}
+.input-brown::placeholder{
+  color: #ffffff;
+  text-transform: uppercase;
+  opacity: 1;
+}
+.input-brown:focus{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255,255,255,.15);
+  border-color: #e5d7cd;
+}
+
+/* Botón azul como el de la captura */
+.btn-blue{
+  background: #0b55c9;
+  border: 2px solid #0a3f90;
+  color: #fff;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  border-radius: 8px;
+  height: 44px;
+}
+.btn-blue:hover{
+  filter: brightness(1.05);
+}
+
+/* Ajustes de ancho en pantallas pequeñas */
+@media (max-width: 576px){
+  .login-box{ border-width: 1.5px; }
+  .login-body{ padding: 18px; }
+}
+
+/* Ajuste general de espaciado */
+.page-wrap{ padding-top:48px; }
