@@ -115,7 +115,7 @@ export function borrarUsuario(email) {
         
         localStorage.setItem(USUARIOS_KEY, JSON.stringify(usuarios));
         
-        console.log('[COMÚN] ✓ Usuario borrado:', email);
+        console.log('[COMÚN]  Usuario borrado:', email);
         return { ok: true };
         
     } catch (error) {
@@ -143,7 +143,7 @@ export function actualizarUsuario(email, datosNuevos) {
         usuarios[index] = { ...usuarios[index], ...datosNuevos };
         localStorage.setItem(USUARIOS_KEY, JSON.stringify(usuarios));
         
-        console.log('[COMÚN] ✓ Usuario actualizado:', email);
+        console.log('[COMÚN] Usuario actualizado:', email);
         return { ok: true, usuario: usuarios[index] };
         
     } catch (error) {
@@ -178,7 +178,7 @@ export function loguearUsuario(email, password) {
         
         localStorage.setItem(USUARIO_ACTIVO_KEY, usuario.email);
         
-        console.log('[COMÚN] ✓ Login exitoso:', usuario.nombre);
+        console.log('[COMÚN] Login exitoso:', usuario.nombre);
         return { ok: true, user: usuario };
         
     } catch (error) {
@@ -193,7 +193,7 @@ export function loguearUsuario(email, password) {
  */
 export function cerrarSesion() {
     localStorage.removeItem(USUARIO_ACTIVO_KEY);
-    console.log('[COMÚN] ✓ Sesión cerrada');
+    console.log('[COMÚN]  Sesión cerrada');
 }
 
 
@@ -207,7 +207,7 @@ export function cerrarSesion() {
  */
 export function inicializarDB() {
     return new Promise((resolve, reject) => {
-        console.log('[VOLUNTARIADOS] 🔄 Inicializando IndexedDB...');
+        console.log('[VOLUNTARIADOS]  Inicializando IndexedDB...');
         
         const request = indexedDB.open(VOLUNTARIADOS_DB, 1);
         
@@ -217,12 +217,12 @@ export function inicializarDB() {
         };
         
         request.onsuccess = () => {
-            console.log('[VOLUNTARIADOS] ✓ IndexedDB abierta');
+            console.log('[VOLUNTARIADOS]  IndexedDB abierta');
             resolve(request.result);
         };
         
         request.onupgradeneeded = (event) => {
-            console.log('[VOLUNTARIADOS] 🔧 Creando estructura...');
+            console.log('[VOLUNTARIADOS]  Creando estructura...');
             
             const db = event.target.result;
             
@@ -236,13 +236,13 @@ export function inicializarDB() {
                 store.createIndex('email', 'email', { unique: false });
                 store.createIndex('tipo', 'tipo', { unique: false });
                 
-                console.log('[VOLUNTARIADOS] ✓ Store "voluntariados" creado');
+                console.log('[VOLUNTARIADOS]  Store "voluntariados" creado');
             }
             
             // Store para selección del dashboard
             if (!db.objectStoreNames.contains(SELECCION_STORE)) {
                 db.createObjectStore(SELECCION_STORE, { keyPath: 'id' });
-                console.log('[VOLUNTARIADOS] ✓ Store "seleccion" creado');
+                console.log('[VOLUNTARIADOS] Store "seleccion" creado');
             }
         };
     });
@@ -256,7 +256,7 @@ export function inicializarDB() {
  */
 export async function crearVoluntariado(voluntariado) {
     try {
-        console.log('[VOLUNTARIADOS] 🔄 Creando:', voluntariado.titulo);
+        console.log('[VOLUNTARIADOS] Creando:', voluntariado.titulo);
         
         const db = await inicializarDB();
         
@@ -289,7 +289,7 @@ export async function crearVoluntariado(voluntariado) {
  */
 export async function obtenerVoluntariados() {
     try {
-        console.log('[VOLUNTARIADOS] 🔄 Obteniendo todos...');
+        console.log('[VOLUNTARIADOS] Obteniendo todos...');
         
         const db = await inicializarDB();
         
@@ -323,7 +323,7 @@ export async function obtenerVoluntariados() {
  */
 export async function borrarVoluntariado(id) {
     try {
-        console.log('[VOLUNTARIADOS] 🔄 Borrando ID:', id);
+        console.log('[VOLUNTARIADOS]  Borrando ID:', id);
         
         const db = await inicializarDB();
         
@@ -358,7 +358,7 @@ export async function borrarVoluntariado(id) {
  */
 export async function actualizarVoluntariado(id, datos) {
     try {
-        console.log('[VOLUNTARIADOS] 🔄 Actualizando ID:', id);
+        console.log('[VOLUNTARIADOS] Actualizando ID:', id);
         
         const db = await inicializarDB();
         
@@ -400,7 +400,7 @@ export async function actualizarVoluntariado(id, datos) {
  */
 export async function guardarSeleccion(voluntariadosSeleccionados) {
     try {
-        console.log('[DASHBOARD] 🔄 Guardando selección:', voluntariadosSeleccionados.length, 'items');
+        console.log('[DASHBOARD] Guardando selección:', voluntariadosSeleccionados.length, 'items');
         
         const db = await inicializarDB();
         
@@ -413,7 +413,7 @@ export async function guardarSeleccion(voluntariadosSeleccionados) {
             });
             
             request.onsuccess = () => {
-                console.log('[DASHBOARD] ✓ Selección guardada');
+                console.log('[DASHBOARD] Selección guardada');
                 resolve({ ok: true });
             };
             
@@ -436,7 +436,7 @@ export async function guardarSeleccion(voluntariadosSeleccionados) {
  */
 export async function obtenerSeleccion() {
     try {
-        console.log('[DASHBOARD] 🔄 Obteniendo selección...');
+        console.log('[DASHBOARD] Obteniendo selección...');
         
         const db = await inicializarDB();
         
@@ -491,4 +491,3 @@ export const almacenaje = {
     guardarSeleccion,
     obtenerSeleccion
 };
-
