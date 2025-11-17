@@ -1,12 +1,8 @@
-
 // Gestión de voluntariados con IndexedDB
-
 
 import { almacenaje } from '../js/almacenaje.js';
 
-
 // 1. MOSTRAR USUARIO ACTIVO EN NAVBAR
-
 function mostrarUsuarioActivo() {
     const label = document.getElementById('usuarioActivoLabel');
     const usuario = almacenaje.obtenerUsuarioActivo();
@@ -21,7 +17,6 @@ function mostrarUsuarioActivo() {
 }
 
 // 2. CARGAR TABLA DE VOLUNTARIADOS
-
 async function cargarTablaVoluntariados() {
     const tbody = document.getElementById('tablaVoluntariados');
     tbody.innerHTML = '<tr><td colspan="6" class="text-center">Cargando...</td></tr>';
@@ -65,7 +60,7 @@ async function cargarTablaVoluntariados() {
         // Añadir eventos a botones de borrar
         agregarEventosBorrar();
         
-        console.log(' Tabla cargada:', voluntariados.length, 'voluntariados');
+        console.log('Tabla cargada:', voluntariados.length, 'voluntariados');
         
     } catch (error) {
         console.error('Error al cargar tabla:', error);
@@ -73,19 +68,14 @@ async function cargarTablaVoluntariados() {
     }
 }
 
-
 // 3. EVENTOS DE BORRAR
-
 function agregarEventosBorrar() {
     const botones = document.querySelectorAll('.btn-borrar');
     
     botones.forEach(boton => {
         boton.addEventListener('click', async function() {
             const id = parseInt(this.getAttribute('data-id'));
-            
-            if (confirm('¿Seguro que deseas borrar este voluntariado?')) {
-                await borrarVoluntariado(id);
-            }
+            await borrarVoluntariado(id);
         });
     });
 }
@@ -118,11 +108,21 @@ async function altaVoluntariado(event) {
     const descripcion = document.getElementById('descripcion').value.trim();
     const tipo = document.getElementById('tipo').value;
     
-    // Validar campos
+    // Validar campos vacíos
     if (!titulo || !email || !fecha || !descripcion) {
         mostrarAlerta('Todos los campos son obligatorios', 'warning');
         return;
     }
+    
+    // Validar que el email existe en usuarios
+    const usuarios = almacenaje.obtenerUsuarios();
+    const usuarioExiste = usuarios.find(u => u.email.toLowerCase() === email.toLowerCase());
+    
+    if (!usuarioExiste) {
+        mostrarAlerta('El email no esta registrado. Debe registrarse primero en Alta Usuario', 'danger');
+        return;
+    }
+    
     // Crear objeto voluntariado
     const nuevoVoluntariado = {
         titulo: titulo.toUpperCase(),
@@ -181,65 +181,96 @@ async function dibujarGrafico() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
         // Configuración del gráfico
-        const barWidth = 150;
-        const barSpacing = 100;
-        const maxHeight = 300;
+        const barWidth = 120;
+        const barSpacing = 150;
+        const maxHeight = 250;
+        const baseY = 320;
         const maxValue = Math.max(ofertas, peticiones, 1);
         
         // Calcular alturas proporcionales
         const alturaOfertas = (ofertas / maxValue) * maxHeight;
         const alturaPeticiones = (peticiones / maxValue) * maxHeight;
         
-        // Posiciones X
-        const xOfertas = 150;
+        // Posiciones X centradas
+        const xOfertas = 200;
         const xPeticiones = xOfertas + barWidth + barSpacing;
         
-        // DIBUJAR BARRA OFERTAS (Verde)
+        // DIBUJAR BARRA OFERTAS (Verde con sombra)
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 3;
+        ctx.shadowOffsetY = 3;
+        
         ctx.fillStyle = '#8ab893';
-        ctx.fillRect(xOfertas, canvas.height - alturaOfertas - 50, barWidth, alturaOfertas);
+        ctx.fillRect(xOfertas, baseY - alturaOfertas, barWidth, alturaOfertas);
         
-        // DIBUJAR BARRA PETICIONES (Naranja)
+        // DIBUJAR BARRA PETICIONES (Naranja con sombra)
         ctx.fillStyle = '#e0ac69';
-        ctx.fillRect(xPeticiones, canvas.height - alturaPeticiones - 50, barWidth, alturaPeticiones);
+        ctx.fillRect(xPeticiones, baseY - alturaPeticiones, barWidth, alturaPeticiones);
         
-        // ETIQUETAS
+        // Resetear sombra
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        
+        // ETIQUETAS DE NÚMEROS (encima de las barras)
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 16px Poppins';
+        ctx.font = 'bold 24px Poppins';
         ctx.textAlign = 'center';
         
+        // Número Ofertas
+        ctx.fillText(ofertas.toString(), xOfertas + barWidth/2, baseY - alturaOfertas - 15);
+        
+        // Número Peticiones
+        ctx.fillText(peticiones.toString(), xPeticiones + barWidth/2, baseY - alturaPeticiones - 15);
+        
+        // ETIQUETAS DE TEXTO (debajo de las barras)
+        ctx.font = 'bold 18px Poppins';
+        
         // Texto Ofertas
-        ctx.fillText('OFERTAS', xOfertas + barWidth/2, canvas.height - 20);
-        ctx.fillText(ofertas.toString(), xOfertas + barWidth/2, canvas.height - alturaOfertas - 60);
+        ctx.fillText('OFERTAS', xOfertas + barWidth/2, baseY + 30);
         
         // Texto Peticiones
-        ctx.fillText('PETICIONES', xPeticiones + barWidth/2, canvas.height - 20);
-        ctx.fillText(peticiones.toString(), xPeticiones + barWidth/2, canvas.height - alturaPeticiones - 60);
+        ctx.fillText('PETICIONES', xPeticiones + barWidth/2, baseY + 30);
         
-        // TÍTULO
-        ctx.font = 'bold 20px Poppins';
-        ctx.fillText('ESTADÍSTICAS DE VOLUNTARIADOS', canvas.width/2, 30);
         
-        console.log('Gráfico dibujado - Ofertas:', ofertas, 'Peticiones:', peticiones);
+        
+        // LÍNEA BASE
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(150, baseY);
+        ctx.lineTo(650, baseY);
+        ctx.stroke();
+        
+        console.log('Grafico dibujado - Ofertas:', ofertas, 'Peticiones:', peticiones);
         
     } catch (error) {
-        console.error('Error al dibujar gráfico:', error);
+        console.error('Error al dibujar grafico:', error);
     }
 }
+
 // 8. INICIALIZACIÓN AL CARGAR LA PÁGINA
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('=== PÁGINA VOLUNTARIADOS CARGADA ===');
+    console.log('=== PAGINA VOLUNTARIADOS CARGADA ===');
+    
+    // 0. Inicializar voluntariados de ejemplo (solo primera vez)
+    await almacenaje.inicializarVoluntariadosEjemplo();
     
     // 1. Mostrar usuario activo
     mostrarUsuarioActivo();
     
     // 2. Cargar tabla inicial
     await cargarTablaVoluntariados();
+    
     // 3. Dibujar gráfico inicial
     await dibujarGrafico();
+    
     // 4. Registrar evento del formulario
     const formulario = document.getElementById('formVoluntariado');
     formulario.addEventListener('submit', altaVoluntariado);
     
-    console.log('Página lista');
+    console.log('Pagina lista');
 });
 

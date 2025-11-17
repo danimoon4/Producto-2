@@ -1,4 +1,3 @@
-
 // CONSTANTES GLOBALES
 const USUARIOS_KEY = 'usuarios';           
 const USUARIO_ACTIVO_KEY = 'usuarioActivo';
@@ -10,7 +9,6 @@ const SELECCION_STORE = 'seleccion';
 // SECCIÓN COMÚN - USUARIOS (localStorage)
 
 // Inicializa usuarios de ejemplo 
-
 function inicializarUsuarios() {
     const usuarios = obtenerUsuarios();
     
@@ -41,10 +39,6 @@ function inicializarUsuarios() {
     }
 }
 
-/**
- * COMÚN: Obtiene todos los usuarios
- * @returns {Array} Array de objetos usuario
- */
 export function obtenerUsuarios() {
     try {
         const data = localStorage.getItem(USUARIOS_KEY);
@@ -55,10 +49,6 @@ export function obtenerUsuarios() {
     }
 }
 
-/**
- * COMÚN: Obtiene el usuario actualmente logueado
- * @returns {Object|null} Usuario activo o null
- */
 export function obtenerUsuarioActivo() {
     try {
         inicializarUsuarios();
@@ -70,17 +60,11 @@ export function obtenerUsuarioActivo() {
         return usuarios.find(u => u.email === email) || null;
         
     } catch (error) {
-        console.error('[COMÚN]  Error al obtener usuario activo:', error);
+        console.error('[COMÚN] Error al obtener usuario activo:', error);
         return null;
     }
 }
 
-/**
- * COMÚN: Crea un nuevo usuario
- * Usado por: Usuarios.html
- * @param {Object} usuario - {nombre, email, password}
- * @returns {Object} {ok: boolean, usuario/error}
- */
 export function crearUsuario(usuario) {
     try {
         const usuarios = obtenerUsuarios();
@@ -93,7 +77,7 @@ export function crearUsuario(usuario) {
         usuarios.push(usuario);
         localStorage.setItem(USUARIOS_KEY, JSON.stringify(usuarios));
         
-        console.log('[COMÚN] ✓ Usuario creado:', usuario.email);
+        console.log('[COMÚN] Usuario creado:', usuario.email);
         return { ok: true, usuario };
         
     } catch (error) {
@@ -102,12 +86,6 @@ export function crearUsuario(usuario) {
     }
 }
 
-/**
- * COMÚN: Borra un usuario por email
- * Usado por: Usuarios.html
- * @param {string} email
- * @returns {Object} {ok: boolean}
- */
 export function borrarUsuario(email) {
     try {
         let usuarios = obtenerUsuarios();
@@ -115,22 +93,15 @@ export function borrarUsuario(email) {
         
         localStorage.setItem(USUARIOS_KEY, JSON.stringify(usuarios));
         
-        console.log('[COMÚN]  Usuario borrado:', email);
+        console.log('[COMÚN] Usuario borrado:', email);
         return { ok: true };
         
     } catch (error) {
-        console.error('[COMÚN]  Error al borrar usuario:', error);
+        console.error('[COMÚN] Error al borrar usuario:', error);
         return { ok: false, error: error.message };
     }
 }
 
-/**
- * COMÚN: Actualiza un usuario existente
- * Usado por: Usuarios.html (futuro)
- * @param {string} email - Email del usuario a actualizar
- * @param {Object} datosNuevos - Nuevos datos
- * @returns {Object} {ok: boolean, usuario/error}
- */
 export function actualizarUsuario(email, datosNuevos) {
     try {
         const usuarios = obtenerUsuarios();
@@ -147,18 +118,11 @@ export function actualizarUsuario(email, datosNuevos) {
         return { ok: true, usuario: usuarios[index] };
         
     } catch (error) {
-        console.error('[COMÚN]  Error al actualizar usuario:', error);
+        console.error('[COMÚN] Error al actualizar usuario:', error);
         return { ok: false, error: error.message };
     }
 }
 
-/**
- * COMÚN: Autentica un usuario (login)
- * Usado por: Login.html
- * @param {string} email
- * @param {string} password
- * @returns {Object} {ok: boolean, user/error}
- */
 export function loguearUsuario(email, password) {
     try {
         inicializarUsuarios();
@@ -182,51 +146,40 @@ export function loguearUsuario(email, password) {
         return { ok: true, user: usuario };
         
     } catch (error) {
-        console.error('[COMÚN]  Error en login:', error);
+        console.error('[COMÚN] Error en login:', error);
         return { ok: false, error: error.message };
     }
 }
 
-/**
- * COMÚN: Cierra sesión del usuario activo
- * Usado por: Todas las páginas (navbar)
- */
 export function cerrarSesion() {
     localStorage.removeItem(USUARIO_ACTIVO_KEY);
-    console.log('[COMÚN]  Sesión cerrada');
+    console.log('[COMÚN] Sesión cerrada');
 }
 
 
 // SECCIÓN VOLUNTARIADOS (IndexedDB)
-// Usado por: Voluntariados.html, Dashboard.html
 
-/**
- * VOLUNTARIADOS: Inicializa la base de datos IndexedDB
- * Crea la estructura de BD la primera vez
- * @returns {Promise<IDBDatabase>}
- */
 export function inicializarDB() {
     return new Promise((resolve, reject) => {
-        console.log('[VOLUNTARIADOS]  Inicializando IndexedDB...');
+        console.log('[VOLUNTARIADOS] Inicializando IndexedDB...');
         
         const request = indexedDB.open(VOLUNTARIADOS_DB, 1);
         
         request.onerror = () => {
-            console.error('[VOLUNTARIADOS]  Error al abrir BD:', request.error);
+            console.error('[VOLUNTARIADOS] Error al abrir BD:', request.error);
             reject(request.error);
         };
         
         request.onsuccess = () => {
-            console.log('[VOLUNTARIADOS]  IndexedDB abierta');
+            console.log('[VOLUNTARIADOS] IndexedDB abierta');
             resolve(request.result);
         };
         
         request.onupgradeneeded = (event) => {
-            console.log('[VOLUNTARIADOS]  Creando estructura...');
+            console.log('[VOLUNTARIADOS] Creando estructura...');
             
             const db = event.target.result;
             
-            // Store para voluntariados
             if (!db.objectStoreNames.contains(VOLUNTARIADOS_STORE)) {
                 const store = db.createObjectStore(VOLUNTARIADOS_STORE, { 
                     keyPath: 'id',
@@ -236,10 +189,9 @@ export function inicializarDB() {
                 store.createIndex('email', 'email', { unique: false });
                 store.createIndex('tipo', 'tipo', { unique: false });
                 
-                console.log('[VOLUNTARIADOS]  Store "voluntariados" creado');
+                console.log('[VOLUNTARIADOS] Store "voluntariados" creado');
             }
             
-            // Store para selección del dashboard
             if (!db.objectStoreNames.contains(SELECCION_STORE)) {
                 db.createObjectStore(SELECCION_STORE, { keyPath: 'id' });
                 console.log('[VOLUNTARIADOS] Store "seleccion" creado');
@@ -248,12 +200,6 @@ export function inicializarDB() {
     });
 }
 
-/**
- * VOLUNTARIADOS: Crea un nuevo voluntariado
- * Usado por: Voluntariados.html (formulario alta)
- * @param {Object} voluntariado - {titulo, email, fecha, descripcion, tipo}
- * @returns {Promise<Object>} {ok: boolean, id/error}
- */
 export async function crearVoluntariado(voluntariado) {
     try {
         console.log('[VOLUNTARIADOS] Creando:', voluntariado.titulo);
@@ -266,12 +212,12 @@ export async function crearVoluntariado(voluntariado) {
             const request = store.add(voluntariado);
             
             request.onsuccess = () => {
-                console.log('[VOLUNTARIADOS] ✓ Creado con ID:', request.result);
+                console.log('[VOLUNTARIADOS] Creado con ID:', request.result);
                 resolve({ ok: true, id: request.result });
             };
             
             request.onerror = () => {
-                console.error('[VOLUNTARIADOS]  Error al crear:', request.error);
+                console.error('[VOLUNTARIADOS] Error al crear:', request.error);
                 reject(request.error);
             };
         });
@@ -282,11 +228,6 @@ export async function crearVoluntariado(voluntariado) {
     }
 }
 
-/**
- * VOLUNTARIADOS: Obtiene todos los voluntariados
- * Usado por: Voluntariados.html (tabla), Dashboard.html (tarjetas)
- * @returns {Promise<Array>} Array de voluntariados
- */
 export async function obtenerVoluntariados() {
     try {
         console.log('[VOLUNTARIADOS] Obteniendo todos...');
@@ -299,31 +240,25 @@ export async function obtenerVoluntariados() {
             const request = store.getAll();
             
             request.onsuccess = () => {
-                console.log('[VOLUNTARIADOS] ✓ Obtenidos:', request.result.length);
+                console.log('[VOLUNTARIADOS] Obtenidos:', request.result.length);
                 resolve(request.result);
             };
             
             request.onerror = () => {
-                console.error('[VOLUNTARIADOS]  Error al obtener:', request.error);
+                console.error('[VOLUNTARIADOS] Error al obtener:', request.error);
                 reject(request.error);
             };
         });
         
     } catch (error) {
-        console.error('[VOLUNTARIADOS]  Error en obtenerVoluntariados:', error);
+        console.error('[VOLUNTARIADOS] Error en obtenerVoluntariados:', error);
         return [];
     }
 }
 
-/**
- * VOLUNTARIADOS: Borra un voluntariado por ID
- * Usado por: Voluntariados.html (botón borrar en tabla)
- * @param {number} id
- * @returns {Promise<Object>} {ok: boolean}
- */
 export async function borrarVoluntariado(id) {
     try {
-        console.log('[VOLUNTARIADOS]  Borrando ID:', id);
+        console.log('[VOLUNTARIADOS] Borrando ID:', id);
         
         const db = await inicializarDB();
         
@@ -333,12 +268,12 @@ export async function borrarVoluntariado(id) {
             const request = store.delete(id);
             
             request.onsuccess = () => {
-                console.log('[VOLUNTARIADOS] ✓ Borrado correctamente');
+                console.log('[VOLUNTARIADOS] Borrado correctamente');
                 resolve({ ok: true });
             };
             
             request.onerror = () => {
-                console.error('[VOLUNTARIADOS]  Error al borrar:', request.error);
+                console.error('[VOLUNTARIADOS] Error al borrar:', request.error);
                 reject(request.error);
             };
         });
@@ -349,13 +284,6 @@ export async function borrarVoluntariado(id) {
     }
 }
 
-/**
- * VOLUNTARIADOS: Actualiza un voluntariado existente
- * Usado por: Voluntariados.html (futuro - edición)
- * @param {number} id
- * @param {Object} datos - Datos a actualizar
- * @returns {Promise<Object>} {ok: boolean, voluntariado/error}
- */
 export async function actualizarVoluntariado(id, datos) {
     try {
         console.log('[VOLUNTARIADOS] Actualizando ID:', id);
@@ -373,7 +301,7 @@ export async function actualizarVoluntariado(id, datos) {
                 const updateRequest = store.put(voluntariado);
                 
                 updateRequest.onsuccess = () => {
-                    console.log('[VOLUNTARIADOS] ✓ Actualizado correctamente');
+                    console.log('[VOLUNTARIADOS] Actualizado correctamente');
                     resolve({ ok: true, voluntariado });
                 };
                 
@@ -389,15 +317,50 @@ export async function actualizarVoluntariado(id, datos) {
     }
 }
 
-// SECCIÓN DASHBOARD (Drag & Drop)
-// Usado por: Dashboard.html (selección de voluntariados)
+async function inicializarVoluntariadosEjemplo() {
+    try {
+        const voluntariadosExistentes = await obtenerVoluntariados();
+        
+        if (voluntariadosExistentes.length === 0) {
+            const voluntariadosIniciales = [
+                {
+                    titulo: 'OFREZCO MEDICINA',
+                    email: 'L@A.U',
+                    fecha: '2025-10-24',
+                    descripcion: 'SUPLEMENTOS VITAMINICOS PARA ANIMALES ENFERMOS',
+                    tipo: 'Oferta'
+                },
+                {
+                    titulo: 'NECESITO REFUGIO',
+                    email: 'M@R.C',
+                    fecha: '2025-10-27',
+                    descripcion: 'SE DAN EN ADOPCION 4 GATITOS',
+                    tipo: 'Petición'
+                },
+                {
+                    titulo: 'NECESITO VEHICULO',
+                    email: 'S@O.N',
+                    fecha: '2025-10-28',
+                    descripcion: 'NECESITO UN VEHICULO PARA TRASLADAR UN CABALLO',
+                    tipo: 'Petición'
+                }
+            ];
+            
+            for (const vol of voluntariadosIniciales) {
+                await crearVoluntariado(vol);
+            }
+            
+            console.log('[COMÚN] Voluntariados iniciales  cargados');
+        } else {
+            console.log('[COMÚN] Ya existen voluntariados, no se cargan datos iniciales');
+        }
+    } catch (error) {
+        console.error('[COMÚN] Error al inicializar voluntariados:', error);
+    }
+}
 
-/**
- * DASHBOARD: Guarda la selección de voluntariados del usuario
- * Usado por: Dashboard.html (al soltar tarjeta en zona selección)
- * @param {Array} voluntariadosSeleccionados - Array de IDs o objetos
- * @returns {Promise<Object>} {ok: boolean}
- */
+// SECCIÓN DASHBOARD
+
 export async function guardarSeleccion(voluntariadosSeleccionados) {
     try {
         console.log('[DASHBOARD] Guardando selección:', voluntariadosSeleccionados.length, 'items');
@@ -429,11 +392,6 @@ export async function guardarSeleccion(voluntariadosSeleccionados) {
     }
 }
 
-/**
- * DASHBOARD: Obtiene la selección guardada del usuario
- * Usado por: Dashboard.html (al cargar página)
- * @returns {Promise<Array>} Array de voluntariados seleccionados
- */
 export async function obtenerSeleccion() {
     try {
         console.log('[DASHBOARD] Obteniendo selección...');
@@ -447,7 +405,7 @@ export async function obtenerSeleccion() {
             
             request.onsuccess = () => {
                 const items = request.result?.items || [];
-                console.log('[DASHBOARD] ✓ Selección obtenida:', items.length, 'items');
+                console.log('[DASHBOARD] Selección obtenida:', items.length, 'items');
                 resolve(items);
             };
             
@@ -466,12 +424,7 @@ export async function obtenerSeleccion() {
 
 // EXPORTACIÓN CENTRALIZADA
 
-/**
- * Objeto que agrupa TODAS las funciones del módulo
- * Permite usar: import { almacenaje } from './almacenaje.js'
- */
 export const almacenaje = {
-    // === COMÚN - Usuarios ===
     obtenerUsuarios,
     obtenerUsuarioActivo,
     crearUsuario,
@@ -479,15 +432,12 @@ export const almacenaje = {
     actualizarUsuario,
     loguearUsuario,
     cerrarSesion,
-    
-    // === VOLUNTARIADOS ===
     inicializarDB,
     crearVoluntariado,
     obtenerVoluntariados,
     borrarVoluntariado,
     actualizarVoluntariado,
-    
-    // === DASHBOARD ===
+    inicializarVoluntariadosEjemplo,
     guardarSeleccion,
     obtenerSeleccion
 };
