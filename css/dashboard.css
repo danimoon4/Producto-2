@@ -1,0 +1,277 @@
+/* HERO SECTION CON IMAGEN DE FONDO 
+
+*/
+.hero-section {
+    position: relative;
+    min-height: 450px;
+    background-image: url('../img/gato.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* OVERLAY OSCURO PARA MEJORAR LEGIBILIDAD */
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1;
+}
+
+/* CONTENIDO DEL HERO */
+.hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+/* TÍTULO PRINCIPAL - Según mockup */
+.hero-title {
+    color: #ffffff;
+    font-size: 4.5rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.8);
+    margin-bottom: 2.5rem;
+    text-transform: uppercase;
+}
+
+/* CONTENEDOR DE BOTONES DE FILTRO */
+.filter-buttons {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ESTILOS BASE DE BOTONES DE FILTRO */
+.btn-filter {
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* BOTÓN OFERTA - Color beige según mockup */
+.btn-oferta {
+    background-color: rgba(155, 142, 126, 0.9);
+    color: #2c2c2c;
+}
+
+.btn-oferta:hover {
+    background-color: rgba(155, 142, 126, 1);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(155, 142, 126, 0.6);
+}
+
+.btn-oferta.active {
+    background-color: #9b8e7e;
+    color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(155, 142, 126, 0.5);
+    transform: scale(1.05);
+}
+
+/* BOTÓN PETICIÓN - Color oscuro según mockup */
+.btn-peticion {
+    background-color: rgba(74, 67, 64, 0.95);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-peticion:hover {
+    background-color: rgba(74, 67, 64, 1);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(74, 67, 64, 0.8);
+}
+
+.btn-peticion.active {
+    background-color: #4a4340;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 4px rgba(74, 67, 64, 0.6);
+    transform: scale(1.05);
+}
+
+/* TARJETAS DE VOLUNTARIADOS - Según mockup página 1 */
+.card-voluntariado {
+    background: rgba(74, 67, 64, 0.85);
+    backdrop-filter: blur(8px);
+    border: 3px solid;
+    border-radius: 10px;
+    color: #ffffff;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    height: 100%;
+    animation: fadeIn 0.6s ease-in;
+    padding: 1.5rem;
+}
+
+/* BORDE BEIGE PARA OFERTAS - Color exacto del mockup */
+.card-voluntariado.oferta {
+    border-color: #9b8e7e;
+    background: rgba(155, 142, 126, 0.5);
+}
+
+/* BORDE OSCURO PARA PETICIONES - Color exacto del mockup */
+.card-voluntariado.peticion {
+    border-color: #4a4340;
+    background: rgba(74, 67, 64, 0.7);
+}
+
+/* HOVER EN TARJETAS */
+.card-voluntariado:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+.card-voluntariado.oferta:hover {
+    background: rgba(155, 142, 126, 0.7);
+    border-color: #b89e8e;
+}
+
+.card-voluntariado.peticion:hover {
+    background: rgba(74, 67, 64, 0.9);
+    border-color: #5a534f;
+}
+
+/* CUERPO DE LA TARJETA */
+.card-voluntariado .card-body {
+    padding: 0;
+}
+
+/* TÍTULO DE LA TARJETA - Según mockup */
+.card-voluntariado .card-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1.5rem;
+    color: #ffffff;
+    line-height: 1.3;
+}
+
+/* DESCRIPCIÓN CON VIÑETA - Según mockup */
+.card-voluntariado .descripcion {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    color: #ffffff;
+    font-weight: 400;
+}
+
+.card-voluntariado .descripcion::before {
+    content: "• ";
+    margin-right: 0.5rem;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* INFORMACIÓN DE FECHA Y USUARIO - Según mockup */
+.card-voluntariado .info-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    margin-top: 1.5rem;
+}
+
+.card-voluntariado .fecha {
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 1rem;
+}
+
+.card-voluntariado .usuario {
+    color: #ffffff;
+    font-weight: 400;
+}
+
+.card-voluntariado .usuario strong {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* BADGE DE TIPO - NO se muestra en el mockup página 1 */
+.badge-tipo {
+    display: none;
+}
+
+/* AJUSTE DEL GRID - 3 columnas como en el mockup */
+@media (min-width: 992px) {
+    #gridVoluntariados .col-lg-4 {
+        max-width: 33.333333%;
+    }
+}
+
+/* RESPONSIVE - AJUSTES PARA TABLET */
+@media (max-width: 991px) {
+    .hero-title {
+        font-size: 3rem;
+        letter-spacing: 0.15em;
+    }
+    
+    .btn-filter {
+        padding: 0.9rem 2.5rem;
+        font-size: 1rem;
+    }
+    
+    .card-voluntariado .card-title {
+        font-size: 1.2rem;
+    }
+}
+
+/* RESPONSIVE - AJUSTES PARA MÓVIL */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+        letter-spacing: 0.1em;
+    }
+    
+    .btn-filter {
+        padding: 0.8rem 2rem;
+        font-size: 0.95rem;
+    }
+    
+    .card-voluntariado {
+        padding: 1.2rem;
+    }
+    
+    .card-voluntariado .card-title {
+        font-size: 1.1rem;
+    }
+    
+    .card-voluntariado .descripcion {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-title {
+        font-size: 2rem;
+        letter-spacing: 0.08em;
+    }
+    
+    .filter-buttons {
+        gap: 1rem;
+    }
+    
+    .btn-filter {
+        padding: 0.7rem 1.8rem;
+        font-size: 0.9rem;
+    }
+}
