@@ -196,6 +196,148 @@ export function cerrarSesion() {
     console.log('[COMÚN]  Sesión cerrada');
 }
 
+// --------------------------------------------------------------------------
+// VARIABLES DE CONFIGURACIÓN
+// --------------------------------------------------------------------------
+
+// Datos iniciales para cargar en localStorage la primera vez
+const USUARIOS_INICIALES = [
+    { id: 1, nombre: "LAURA", email: "L@A.U", password: "123" },
+    { id: 2, nombre: "MARCOS", email: "M@R.C", password: "123" },
+    { id: 3, nombre: "SONIA", email: "S@O.N", password: "123" }
+];
+
+const KEY_USUARIOS = 'usuarios';
+const KEY_USUARIO_ACTIVO = 'usuarioActivoEmail';
+
+// Configuración de IndexedDB
+const DB_NAME = 'VoluntariadoDB';
+const DB_VERSION = 1;
+const STORE_VOLUNTARIADOS = 'voluntariados';
+let db; // Variable global para la conexión a IndexedDB
+
+// --------------------------------------------------------------------------
+// UTILERÍAS
+// --------------------------------------------------------------------------
+
+/**
+ * Función auxiliar para obtener el siguiente ID único de un array.
+ */
+function obtenerNuevoId(array) {
+    if (array.length === 0) return 1;
+    const ids = array.map(item => item.id).filter(id => id !== undefined);
+    if (ids.length === 0) return 1;
+    return Math.max(...ids) + 1;
+}
+
+// --------------------------------------------------------------------------
+// GESTIÓN DE USUARIOS (LocalStorage - Persistencia de datos)
+// --------------------------------------------------------------------------
+
+/**
+ * Inicializa la lista de usuarios en LocalStorage si NO existe.
+ * Esto garantiza que los 3 usuarios predeterminados solo se carguen la primera vez.
+ */
+function inicializarUsuariosLS() {
+    if (!localStorage.getItem(KEY_USUARIOS)) { 
+        localStorage.setItem(KEY_USUARIOS, JSON.stringify(USUARIOS_INICIALES));
+    }
+}
+inicializarUsuariosLS(); // Ejecutar al inicio del script
+
+/**
+ * Obtiene todos los usuarios de LocalStorage.
+ */
+export function obtenerTodosUsuariosLS() {
+    const data = localStorage.getItem(KEY_USUARIOS);
+    return data ? JSON.parse(data) : [];
+}
+
+/**
+ * Guarda un nuevo usuario en LocalStorage (función usada por gestionUsuarios.js).
+ */
+export function guardarUsuarioLS(usuario) {
+    const usuarios = obtenerTodosUsuariosLS();
+    const nuevoUsuario = {
+        ...usuario,
+        id: obtenerNuevoId(usuarios),
+        nombre: usuario.nombre.toUpperCase(),
+    };
+    usuarios.push(nuevoUsuario);
+    localStorage.setItem(KEY_USUARIOS, JSON.stringify(usuarios));
+    return nuevoUsuario;
+}
+
+/**
+ * Elimina un usuario de LocalStorage por su ID (función usada por gestionUsuarios.js).
+ */
+export function eliminarUsuarioLS(id) {
+    let usuarios = obtenerTodosUsuariosLS();
+    const index = usuarios.findIndex(u => u.id === id);
+    if (index !== -1) {
+        usuarios.splice(index, 1);
+        localStorage.setItem(KEY_USUARIOS, JSON.stringify(usuarios));
+        return true;
+    }
+    return false;
+}
+
+
+// --------------------------------------------------------------------------
+// GESTIÓN DE LOGIN Y SESIÓN (LocalStorage - Usuario Activo)
+// --------------------------------------------------------------------------
+
+/**
+ * Obtiene el email del usuario activo de localStorage.
+ */
+export function obtenerUsuarioActivoEmail() {
+    return localStorage.getItem(KEY_USUARIO_ACTIVO);
+}
+
+/**
+ * Obtiene el objeto completo del usuario activo (usando el email guardado).
+ */
+export function obtenerUsuarioActivo() {
+    const emailActivo = obtenerUsuarioActivoEmail();
+    if (!emailActivo) return null;
+    
+    const usuarios = obtenerTodosUsuariosLS();
+    return usuarios.find(u => u.email === emailActivo);
+}
+
+/**
+ * Guarda el email del usuario activo en localStorage.
+ */
+function guardarUsuarioActivo(email) {
+    localStorage.setItem(KEY_USUARIO_ACTIVO, email);
+}
+
+/**
+ * Autentica al usuario y guarda la sesión en localStorage si es exitoso.
+ */
+export function loguearUsuario(email, password) {
+    const usuarios = obtenerTodosUsuariosLS();
+    // Normalizar la entrada para hacer la búsqueda
+    const normEmail = (email || "").trim().toLowerCase(); 
+
+    const usuario = usuarios.find(u => 
+        (u.email || "").trim().toLowerCase() === normEmail && u.password === password
+    );
+    
+    if (usuario) {
+        guardarUsuarioActivo(usuario.email); // ¡Persistencia de Sesión!
+    }
+    return usuario; 
+}
+
+/**
+ * Cierra la sesión eliminando el usuario activo.
+ */
+export function cerrarSesion() {
+    localStorage.removeItem(KEY_USUARIO_ACTIVO);
+}
+
+/**----------------------------------------------------------------------------**/
 
 // SECCIÓN VOLUNTARIADOS (IndexedDB)
 // Usado por: Voluntariados.html, Dashboard.html
