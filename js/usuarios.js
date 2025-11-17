@@ -1,22 +1,43 @@
-//S LÓGICA DE GESTIÓN DE USUARIOS
+// ===============================================
+// MÓDULO INT_4_USUARIOS.JS (Producto 2)
+// Lógica de Gestión de Usuarios - CRUD con LocalStorage (Persistencia)
+// ===============================================
 
-// Lee y modifica datos de datos.js
+import { 
+    obtenerTodosUsuariosLS,    // OBTENER: Obtiene todos los usuarios persistidos de LocalStorage
+    guardarUsuarioLS,          // ALTA: Guarda un nuevo usuario en LocalStorage
+    eliminarUsuarioLS,         // BAJA: Elimina un usuario de LocalStorage
+    obtenerUsuarioActivo       // SESIÓN: Obtiene el usuario logueado para mostrar en navbar
+} from './almacenaje.js'; 
 
-// Importamos los datos desde datos.js
-import { usuarios, agregarUsuario, obtenerNuevoId } from './datos.js';
+// 1. REFERENCIAS A ELEMENTOS DEL DOM
+const formulario = document.getElementById('formulario-alta-usuario');
+const tablaCuerpo = document.getElementById('tabla-cuerpo-usuarios');
+// ID usado en la navbar de gestiondeUsuarios.html
+const usuarioActivoSpan = document.getElementById('usuarioActivo'); 
 
-// REFERENCIAS A ELEMENTOS DEL DOM
+/**
+ * Muestra el nombre del usuario activo en la barra de navegación.
+ */
+function mostrarUsuarioActivoNav() {
+    const usuario = obtenerUsuarioActivo(); // Obtiene el objeto usuario del localStorage
+    if (usuario) {
+        usuarioActivoSpan.textContent = usuario.nombre;
+    } else {
+        usuarioActivoSpan.textContent = '-NO LOGIN-';
+    }
+}
 
-const formulario = document.getElementById('formUsuario');
-const tbody = document.getElementById('tablaUsuarios');
-
-//  FUNCIÓN: Renderizar tabla de usuarios
-
-function cargarTablaUsuarios() {
-    tbody.innerHTML = ''; // Limpiar tabla antes de cargar
+/**
+ * Función que actualiza el contenido de la tabla de usuarios.
+ */
+function renderizarTabla() {
+    tablaCuerpo.innerHTML = ''; 
     
-    // Recorrer array y crear una fila por cada usuario
-    usuarios.forEach((usuario, index) => {
+    // Obtener los usuarios de LocalStorage (Persistidos)
+    const usuarios = obtenerTodosUsuariosLS(); 
+    
+    usuarios.forEach(usuario => {
         const fila = document.createElement('tr');
         fila.className = 'text-center';
         
@@ -25,75 +46,68 @@ function cargarTablaUsuarios() {
             <td>${usuario.email}</td>
             <td>${usuario.password}</td>
             <td>
-                <button class="btn btn-danger btn-sm" data-index="${index}">
+                <!-- Usamos data-id para identificar al usuario por su ID único -->
+                <button class="btn btn-danger btn-sm" data-id="${usuario.id}">
                     BORRAR
                 </button>
             </td>
         `;
-        
-        tbody.appendChild(fila);
+        tablaCuerpo.appendChild(fila);
     });
-
-    // Añadir eventos a los botones de borrar
-    const botonesBorrar = tbody.querySelectorAll('.btn-danger');
-    botonesBorrar.forEach(boton => {
-        boton.addEventListener('click', function() {
-            const index = parseInt(this.getAttribute('data-index'));
-            borrarUsuario(index);
+    
+    // Asignar eventos de baja después de renderizar
+    document.querySelectorAll('.btn-danger').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const idUsuario = parseInt(e.target.dataset.id); 
+            gestionarBajaUsuario(idUsuario);
         });
     });
 }
 
-//  FUNCIÓN: Borrar usuario
+/**
+ * Lógica para manejar el ALTA de un usuario (cuando se pulsa 'DAR DE ALTA')
+ */
+formulario.addEventListener('submit', function(e) {
+    e.preventDefault(); 
 
-function borrarUsuario(index) {
-    // Eliminar del array
-    usuarios.splice(index, 1);
-    
-    // Recargar tabla
-    cargarTablaUsuarios();
-}
+    const nombre = document.getElementById('nombreUsuario').value;
+    const email = document.getElementById('emailUsuario').value;
+    const password = document.getElementById('passwordUsuario').value;
 
-//  FUNCIÓN: Alta de usuario
-
-function altaUsuario(event) {
-    event.preventDefault();
+    // Llama a la función de almacenaje para guardar en LocalStorage (Persistencia)
+    guardarUsuarioLS({ nombre, email, password });
     
-    // Obtener valores del formulario
-    const nombre = document.getElementById('nombre').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    // Actualizar la tabla
+    renderizarTabla();
     
-    // Crear nuevo objeto usuario
-    const nuevoUsuario = {
-        id: obtenerNuevoId(usuarios),
-        nombre: nombre.toUpperCase(),
-        email: email,
-        password: password
-    };
-    
-    // Añadir al array
-    usuarios.push(nuevoUsuario);
-    
-    // Recargar tabla
-    cargarTablaUsuarios();
-    
-    // Limpiar formulario
+    // Limpiar el formulario
     formulario.reset();
-    
-    console.log(`Usuario ${nombre} agregado. Total: ${usuarios.length}`);
+});
+
+
+/**
+ * Lógica para manejar la BAJA de un usuario (Persistencia)
+ */
+function gestionarBajaUsuario(id) {
+    // Usamos confirm() para la interacción requerida
+    if (confirm(`¿Estás seguro de que quieres eliminar al usuario con ID ${id}?`)) {
+        // Llama a la función de almacenaje para eliminar de LocalStorage
+        const exito = eliminarUsuarioLS(id);
+
+        if (exito) {
+            renderizarTabla();
+        } else {
+            alert(`Error: No se encontró el usuario con ID ${id}.`);
+        }
+    }
 }
 
-//INICIALIZACIÓN AL CARGAR LA PÁGINA
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Cargar tabla inicial con los datos de datos.js
-    cargarTablaUsuarios();
-    
-    // Registrar evento del formulario
-    formulario.addEventListener('submit', altaUsuario);
-    
-    console.log('Página cargada - Mostrando', usuarios.length, 'usuarios');
+// 4. INICIALIZACIÓN
+document.addEventListener('DOMContentLoaded', () => {
+    // Muestra el estado del login en la navbar
+    mostrarUsuarioActivoNav(); 
+    // Carga los usuarios desde LocalStorage (Persistencia)
+    renderizarTabla(); 
 });
 
 // ============================================
