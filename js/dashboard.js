@@ -1,64 +1,70 @@
-// dashboard.js - LÓGICA DEL DASHBOARD
-
-// Importamos los datos desde datos.js
-import { voluntariados } from './datos.js';
-
-
-// REFERENCIAS A ELEMENTOS DEL DOM
-
-const gridVoluntariados = document.getElementById('gridVoluntariados');
-const btnOferta = document.getElementById('btnOferta');
-const btnPeticion = document.getElementById('btnPeticion');
-
-
-// VARIABLE DE ESTADO DEL FILTRO
-
+//Dashboard con Drag and Drop e IndexedDB
+import { almacenaje } from './almacenaje.js';
 let filtroActivo = null;
+let voluntariadosSeleccionados = [];
 
-
-// FUNCIÓN: Renderizar tarjetas
-// 
-
-function renderizarTarjetas(listaVoluntariados) {
-    // Limpiar el contenedor antes de renderizar
-    gridVoluntariados.innerHTML = '';
+// MOSTRAR USUARIO ACTIVO
+function mostrarUsuarioActivo() {
+    const userStatus = document.getElementById('userStatus');
+    const usuario = almacenaje.obtenerUsuarioActivo();
     
-    // Si no hay voluntariados, mostrar mensaje
-    if (listaVoluntariados.length === 0) {
-        gridVoluntariados.innerHTML = `
-            <div class="col-12 text-center py-5">
-                <p class="text-white fs-4">No hay voluntariados que coincidan con el filtro seleccionado</p>
-            </div>
-        `;
-        return;
+    if (usuario) {
+        userStatus.textContent = usuario.email;
+        userStatus.style.color = '#8ab893';
+    } else {
+        userStatus.textContent = '-NO LOGIN-';
+        userStatus.style.color = '#ff4444';
     }
-    
-    // Crear una tarjeta por cada voluntariado
-    listaVoluntariados.forEach(vol => {
-        const tarjeta = crearTarjetaHTML(vol);
-        gridVoluntariados.innerHTML += tarjeta;
-    });
 }
 
+// RENDERIZAR TARJETAS (excluye seleccionados)
+async function renderizarTarjetas() {
+    const grid = document.getElementById('gridVoluntariados');
+    grid.innerHTML = '<div class="col-12 text-center"><p class="text-white">Cargando...</p></div>';
+    
+    try {
+        const voluntariados = await almacenaje.obtenerVoluntariados();
+        
+        // FILTRAR: excluir los ya seleccionados
+        let voluntariosFiltrados = voluntariados.filter(v => !voluntariadosSeleccionados.includes(v.id));
+        
+        // FILTRAR: aplicar filtro de tipo si está activo
+        if (filtroActivo) {
+            voluntariosFiltrados = voluntariosFiltrados.filter(v => v.tipo === filtroActivo);
+        }
+        
+        grid.innerHTML = '';
+        
+        if (voluntariosFiltrados.length === 0) {
+            grid.innerHTML = '<div class="col-12 text-center"><p class="text-white fs-4">No hay voluntariados disponibles</p></div>';
+            return;
+        }
+        
+        voluntariosFiltrados.forEach(vol => {
+            const tarjeta = crearTarjetaHTML(vol);
+            grid.innerHTML += tarjeta;
+        });
+        
+        agregarEventosDrag();
+        
+    } catch (error) {
+        console.error('Error al renderizar:', error);
+    }
+}
 
-//  FUNCIÓN: Crear HTML de una tarjeta
-
-
-function crearTarjetaHTML(voluntariado) {
-    // Determinar la clase de borde según el tipo
-    const claseTipo = voluntariado.tipo === 'oferta' ? 'oferta' : 'peticion';
+// CREAR HTML DE TARJETA
+function crearTarjetaHTML(vol) {
+    const claseTipo = vol.tipo === 'Oferta' ? 'oferta' : 'peticion';
     
     return `
         <div class="col-12 col-md-6 col-lg-4">
-            <div class="card card-voluntariado ${claseTipo}">
+            <div class="card-voluntariado ${claseTipo}" draggable="true" data-id="${vol.id}">
                 <div class="card-body">
-                    <h2 class="card-title">${voluntariado.titulo}</h2>
-                    
-                    <p class="descripcion">${voluntariado.descripcion}</p>
-                    
+                    <h3 class="card-title">${vol.titulo}</h3>
+                    <p class="descripcion">${vol.descripcion}</p>
                     <div class="info-footer">
-                        <div class="fecha">${voluntariado.fecha}</div>
-                        <div class="usuario">PUBLICADO: <strong>${voluntariado.usuario}</strong></div>
+                        <div class="fecha">${vol.fecha}</div>
+                        <div class="usuario">PUBLICADO: <strong>${vol.email}</strong></div>
                     </div>
                 </div>
             </div>
@@ -66,94 +72,148 @@ function crearTarjetaHTML(voluntariado) {
     `;
 }
 
+// EVENTOS DRAG
+function agregarEventosDrag() {
+    const tarjetas = document.querySelectorAll('.card-voluntariado[draggable="true"]');
+    
+    tarjetas.forEach(tarjeta => {
+        tarjeta.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('voluntariado-id', tarjeta.getAttribute('data-id'));
+            tarjeta.classList.add('dragging');
+        });
+        
+        tarjeta.addEventListener('dragend', () => {
+            tarjeta.classList.remove('dragging');
+        });
+    });
+}
 
-//FUNCIÓN: Aplicar filtro
-
-// Filtra los voluntariados según el tipo seleccionado
-// y actualiza la visualización de las tarjetas
+// APLICAR FILTRO
 function aplicarFiltro() {
-    let voluntariosFiltrados;
-    
-    // Si no hay filtro activo, mostrar todos
-    if (filtroActivo === null) {
-        voluntariosFiltrados = voluntariados;
-    } else {
-        // Filtrar por tipo (oferta o peticion)
-        voluntariosFiltrados = voluntariados.filter(vol => vol.tipo === filtroActivo);
-    }
-    
-    // Renderizar las tarjetas filtradas
-    renderizarTarjetas(voluntariosFiltrados);
-    
-    // Actualizar estado visual de los botones
+    renderizarTarjetas();
     actualizarBotonesFiltro();
 }
 
-
-//  FUNCIÓN: Actualizar estilos de botones
-
-// Añade/quita la clase 'active' según el filtro activo
+// ACTUALIZAR BOTONES FILTRO
 function actualizarBotonesFiltro() {
-    // Botón OFERTA
-    if (filtroActivo === 'oferta') {
-        btnOferta.classList.add('active');
-    } else {
-        btnOferta.classList.remove('active');
+    const btnOferta = document.getElementById('btnOferta');
+    const btnPeticion = document.getElementById('btnPeticion');
+    
+    btnOferta.classList.toggle('active', filtroActivo === 'Oferta');
+    btnPeticion.classList.toggle('active', filtroActivo === 'Petición');
+}
+
+// RENDERIZAR SELECCION (con formato completo)
+async function renderizarSeleccion() {
+    const zona = document.getElementById('zonaSeleccion');
+    
+    if (voluntariadosSeleccionados.length === 0) {
+        zona.innerHTML = '<p class="texto-placeholder">Arrastra aqui los voluntariados que te interesan</p>';
+        return;
     }
     
-    // Botón PETICIÓN
-    if (filtroActivo === 'peticion') {
-        btnPeticion.classList.add('active');
-    } else {
-        btnPeticion.classList.remove('active');
+    const voluntariados = await almacenaje.obtenerVoluntariados();
+    zona.innerHTML = '';
+    
+    voluntariadosSeleccionados.forEach(id => {
+        const vol = voluntariados.find(v => v.id === id);
+        if (vol) {
+            const claseTipo = vol.tipo === 'Oferta' ? 'oferta' : 'peticion';
+            
+            // Crear tarjeta con el MISMO formato que las disponibles
+            const tarjeta = document.createElement('div');
+            tarjeta.className = 'col-12 col-md-6 col-lg-4';
+            tarjeta.innerHTML = `
+                <div class="card-voluntariado ${claseTipo} seleccionada" data-id="${vol.id}">
+                    <div class="card-body">
+                        <h3 class="card-title">${vol.titulo}</h3>
+                        <p class="descripcion">${vol.descripcion}</p>
+                        <div class="info-footer">
+                            <div class="fecha">${vol.fecha}</div>
+                            <div class="usuario">PUBLICADO: <strong>${vol.email}</strong></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Click para quitar de selección
+            tarjeta.querySelector('.card-voluntariado').addEventListener('click', () => quitarSeleccion(id));
+            
+            zona.appendChild(tarjeta);
+        }
+    });
+}
+
+// AGREGAR A SELECCION
+async function agregarASeleccion(id) {
+    if (!voluntariadosSeleccionados.includes(id)) {
+        voluntariadosSeleccionados.push(id);
+        await almacenaje.guardarSeleccion(voluntariadosSeleccionados);
+        
+        // Re-renderizar AMBAS zonas
+        await renderizarTarjetas();
+        await renderizarSeleccion();
+        
+        console.log('Voluntariado agregado:', id);
     }
 }
 
-
-// EVENTOS DE LOS BOTONES DE FILTRO
-
-
-// Botón OFERTA - Al hacer click filtra solo ofertas
-btnOferta.addEventListener('click', function() {
-    // Si ya está activo, desactivar (mostrar todos)
-    if (filtroActivo === 'oferta') {
-        filtroActivo = null;
-    } else {
-        // Activar filtro de ofertas
-        filtroActivo = 'oferta';
-    }
+// QUITAR DE SELECCION
+async function quitarSeleccion(id) {
+    voluntariadosSeleccionados = voluntariadosSeleccionados.filter(vId => vId !== id);
+    await almacenaje.guardarSeleccion(voluntariadosSeleccionados);
     
-    aplicarFiltro();
-});
-
-// Botón PETICIÓN - Al hacer click filtra solo peticiones
-btnPeticion.addEventListener('click', function() {
-    // Si ya está activo, desactivar (mostrar todos)
-    if (filtroActivo === 'peticion') {
-        filtroActivo = null;
-    } else {
-        // Activar filtro de peticiones
-        filtroActivo = 'peticion';
-    }
+    // Re-renderizar AMBAS zonas
+    await renderizarTarjetas();
+    await renderizarSeleccion();
     
-    aplicarFiltro();
-});
+    console.log('Voluntariado quitado:', id);
+}
 
-
-// INICIALIZACIÓN AL CARGAR LA PÁGINA
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Cargar todas las tarjetas al inicio (sin filtro)
-    aplicarFiltro();
+// INICIALIZACION
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('=== DASHBOARD CARGADO ===');
     
-    console.log('Dashboard cargado - Mostrando', voluntariados.length, 'voluntariados');
-    console.log('Datos cargados desde datos.js:', voluntariados);
+    await almacenaje.inicializarVoluntariadosEjemplo();
+    
+    mostrarUsuarioActivo();
+    
+    voluntariadosSeleccionados = await almacenaje.obtenerSeleccion();
+    
+    await renderizarTarjetas();
+    await renderizarSeleccion();
+    
+    const btnOferta = document.getElementById('btnOferta');
+    const btnPeticion = document.getElementById('btnPeticion');
+    
+    btnOferta.addEventListener('click', () => {
+        filtroActivo = filtroActivo === 'Oferta' ? null : 'Oferta';
+        aplicarFiltro();
+    });
+    
+    btnPeticion.addEventListener('click', () => {
+        filtroActivo = filtroActivo === 'Petición' ? null : 'Petición';
+        aplicarFiltro();
+    });
+    
+    const zonaSeleccion = document.getElementById('zonaSeleccion');
+    
+    zonaSeleccion.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        zonaSeleccion.classList.add('drag-over');
+    });
+    
+    zonaSeleccion.addEventListener('dragleave', () => {
+        zonaSeleccion.classList.remove('drag-over');
+    });
+    
+    zonaSeleccion.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        zonaSeleccion.classList.remove('drag-over');
+        
+        const id = parseInt(e.dataTransfer.getData('voluntariado-id'));
+        await agregarASeleccion(id);
+    });
+    
+    console.log('Dashboard iniciado');
 });
-
-
-// 1. IA: Claude - Prompt: "Cómo filtrar un array de objetos en JavaScript por propiedad específica usando el método filter y renderizar el resultado"
-// 2. IA: Claude - Prompt: "Cómo implementar un sistema de filtrado con botones que se activen/desactiven al hacer click, usando una variable de estado"
-// 3. IA: Claude - Prompt: "Cómo crear tarjetas HTML dinámicamente desde un array de objetos usando template strings en JavaScript"
-// 4. IA: Claude - Prompt: "Cómo añadir y quitar clases CSS con classList.add y classList.remove para cambiar estilos de botones activos"
-// 5. IA: Claude - Prompt: "Cómo usar el operador ternario en JavaScript para asignar clases CSS condicionales según una propiedad del objeto"
-// 6. IA: Claude - Prompt: "Cómo inicializar una aplicación JavaScript al cargar la página usando el evento DOMContentLoaded y log de datos importados"
