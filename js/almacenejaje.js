@@ -5,10 +5,8 @@ const VOLUNTARIADOS_DB = 'VoluntariadosDB';
 const VOLUNTARIADOS_STORE = 'voluntariados';
 const SELECCION_STORE = 'seleccion';
 
-
 // SECCIÓN COMÚN - USUARIOS (localStorage)
 
-// Inicializa usuarios de ejemplo 
 function inicializarUsuarios() {
     const usuarios = obtenerUsuarios();
     
@@ -155,7 +153,6 @@ export function cerrarSesion() {
     localStorage.removeItem(USUARIO_ACTIVO_KEY);
     console.log('[COMÚN] Sesión cerrada');
 }
-
 
 // SECCIÓN VOLUNTARIADOS (IndexedDB)
 
@@ -350,7 +347,7 @@ async function inicializarVoluntariadosEjemplo() {
                 await crearVoluntariado(vol);
             }
             
-            console.log('[COMÚN] Voluntariados iniciales  cargados');
+            console.log('[COMÚN] Voluntariados iniciales cargados');
         } else {
             console.log('[COMÚN] Ya existen voluntariados, no se cargan datos iniciales');
         }
@@ -420,7 +417,6 @@ export async function obtenerSeleccion() {
         return [];
     }
 }
-
 
 // EXPORTACIÓN CENTRALIZADA
 

@@ -1,4 +1,5 @@
 // Gestión de voluntariados con IndexedDB
+
 import { almacenaje } from '../js/almacenaje.js';
 
 // 1. MOSTRAR USUARIO ACTIVO EN NAVBAR
