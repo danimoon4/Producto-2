@@ -1,113 +1,131 @@
-//S LÓGICA DE GESTIÓN DE USUARIOS
+//Con localStorage
+import { almacenaje } from './almacenaje.js';
 
-// Lee y modifica datos de datos.js
-
-// Importamos los datos desde datos.js
-import { usuarios, agregarUsuario, obtenerNuevoId } from '../js/almacenaje';
-
-// REFERENCIAS A ELEMENTOS DEL DOM
-
-const formulario = document.getElementById('formUsuario');
-const tbody = document.getElementById('tablaUsuarios');
-
-//  FUNCIÓN: Renderizar tabla de usuarios
-
-function cargarTablaUsuarios() {
-    tbody.innerHTML = ''; // Limpiar tabla antes de cargar
+// MOSTRAR USUARIO ACTIVO EN NAVBAR
+function mostrarUsuarioActivo() {
+    const userStatus = document.getElementById('userStatus');
+    const usuario = almacenaje.obtenerUsuarioActivo();
     
-    // Recorrer array y crear una fila por cada usuario
-    usuarios.forEach((usuario, index) => {
-        const fila = document.createElement('tr');
-        fila.className = 'text-center';
-        
-        fila.innerHTML = `
-            <td class="fw-bold">${usuario.nombre}</td>
-            <td>${usuario.email}</td>
-            <td>${usuario.password}</td>
-            <td>
-                <button class="btn btn-danger btn-sm" data-index="${index}">
-                    BORRAR
-                </button>
-            </td>
-        `;
-        
-        tbody.appendChild(fila);
-    });
+    if (usuario) {
+        userStatus.textContent = usuario.email;
+        userStatus.style.color = '#8ab893';
+        userStatus.style.fontWeight = '700';
+    } else {
+        userStatus.textContent = '-NO LOGIN-';
+        userStatus.style.color = '#ff4444';
+        userStatus.style.fontWeight = '400';
+    }
+}
 
-    // Añadir eventos a los botones de borrar
-    const botonesBorrar = tbody.querySelectorAll('.btn-danger');
-    botonesBorrar.forEach(boton => {
+// CARGAR TABLA DE USUARIOS
+function cargarTablaUsuarios() {
+    const tbody = document.getElementById('tablaUsuarios');
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center">Cargando...</td></tr>';
+    
+    try {
+        const usuarios = almacenaje.obtenerUsuarios();
+        
+        tbody.innerHTML = '';
+        
+        if (usuarios.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay usuarios</td></tr>';
+            return;
+        }
+        
+        usuarios.forEach(usuario => {
+            const fila = document.createElement('tr');
+            fila.className = 'text-center';
+            
+            fila.innerHTML = `
+                <td class="fw-bold">${usuario.nombre}</td>
+                <td>${usuario.email}</td>
+                <td>${usuario.password}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm btn-borrar" data-email="${usuario.email}">
+                        BORRAR
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(fila);
+        });
+        
+        agregarEventosBorrar();
+        
+        console.log('Tabla cargada:', usuarios.length, 'usuarios');
+        
+    } catch (error) {
+        console.error('Error al cargar tabla:', error);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar</td></tr>';
+    }
+}
+
+// EVENTOS DE BORRAR
+function agregarEventosBorrar() {
+    const botones = document.querySelectorAll('.btn-borrar');
+    
+    botones.forEach(boton => {
         boton.addEventListener('click', function() {
-            const index = parseInt(this.getAttribute('data-index'));
-            borrarUsuario(index);
+            const email = this.getAttribute('data-email');
+            borrarUsuario(email);
         });
     });
 }
 
-//  FUNCIÓN: Borrar usuario
-
-function borrarUsuario(index) {
-    // Eliminar del array
-    usuarios.splice(index, 1);
+// BORRAR USUARIO
+function borrarUsuario(email) {
+    const resultado = almacenaje.borrarUsuario(email);
     
-    // Recargar tabla
-    cargarTablaUsuarios();
+    if (resultado.ok) {
+        cargarTablaUsuarios();
+        console.log('Usuario borrado:', email);
+    } else {
+        alert('Error al borrar usuario');
+    }
 }
 
-//  FUNCIÓN: Alta de usuario
-
+// ALTA DE USUARIO
 function altaUsuario(event) {
     event.preventDefault();
     
-    // Obtener valores del formulario
-    const nombre = document.getElementById('nombre').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const nombre = document.getElementById('nombre').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
     
-    // Crear nuevo objeto usuario
+    if (!nombre || !email || !password) {
+        alert('Todos los campos son obligatorios');
+        return;
+    }
+    
     const nuevoUsuario = {
-        id: obtenerNuevoId(usuarios),
         nombre: nombre.toUpperCase(),
         email: email,
-        password: password
+        password: password,
+        rol: 'usuario'
     };
     
-    // Añadir al array
-    usuarios.push(nuevoUsuario);
+    const resultado = almacenaje.crearUsuario(nuevoUsuario);
     
-    // Recargar tabla
-    cargarTablaUsuarios();
-    
-    // Limpiar formulario
-    formulario.reset();
-    
-    console.log(`Usuario ${nombre} agregado. Total: ${usuarios.length}`);
+    if (resultado.ok) {
+        cargarTablaUsuarios();
+        document.getElementById('formUsuario').reset();
+        alert('Usuario creado correctamente');
+        console.log('Usuario creado:', nuevoUsuario.email);
+    } else {
+        alert(resultado.error);
+    }
 }
 
-//INICIALIZACIÓN AL CARGAR LA PÁGINA
-
+// INICIALIZACION
 document.addEventListener('DOMContentLoaded', function() {
-    // Cargar tabla inicial con los datos de datos.js
+    console.log('=== PAGINA USUARIOS CARGADA ===');
+    
+    mostrarUsuarioActivo();
+    
     cargarTablaUsuarios();
     
-    // Registrar evento del formulario
+    const formulario = document.getElementById('formUsuario');
     formulario.addEventListener('submit', altaUsuario);
     
-    console.log('Página cargada - Mostrando', usuarios.length, 'usuarios');
+    console.log('Pagina lista');
 });
-
-// ============================================
-// ⭐ PROMPTS DE IA GENERATIVA UTILIZADOS:
-// ============================================
-// 1. IA: Claude - Prompt: "Cómo importar variables y funciones de otro archivo JavaScript usando import y export en módulos ES6"
-// 
-// 2. IA: Claude - Prompt: "Cómo recorrer un array de objetos con forEach y crear filas de tabla HTML dinámicamente con createElement"
-// 
-// 3. IA: Claude - Prompt: "Cómo añadir eventos click a múltiples botones generados dinámicamente usando querySelectorAll y addEventListener"
-// 
-// 4. IA: Claude - Prompt: "Cómo capturar el evento submit de un formulario con preventDefault y obtener valores de inputs por id"
-// 
-// 5. IA: Claude - Prompt: "Cómo usar data attributes en HTML y leerlos desde JavaScript con getAttribute o dataset"
-// 
-// 6. IA: Claude - Prompt: "Cómo eliminar elementos de un array por índice usando splice en JavaScript"
-
