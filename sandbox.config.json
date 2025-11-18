@@ -1,0 +1,7 @@
+{
+  "template": "static",
+  "container": {
+    "port": 3000,
+    "startCommand": "echo 'Static site ready'"
+  }
+}
