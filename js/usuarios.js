@@ -1,127 +1,131 @@
-// ===============================================
-// MÓDULO INT_4_USUARIOS.JS (Producto 2)
-// Lógica de Gestión de Usuarios - CRUD con LocalStorage (Persistencia)
-// ===============================================
+//Con localStorage
+import { almacenaje } from './almacenaje.js';
 
-import { 
-    obtenerTodosUsuariosLS,    // OBTENER: Obtiene todos los usuarios persistidos de LocalStorage
-    guardarUsuarioLS,          // ALTA: Guarda un nuevo usuario en LocalStorage
-    eliminarUsuarioLS,         // BAJA: Elimina un usuario de LocalStorage
-    obtenerUsuarioActivo       // SESIÓN: Obtiene el usuario logueado para mostrar en navbar
-} from './almacenaje.js'; 
-
-// 1. REFERENCIAS A ELEMENTOS DEL DOM
-const formulario = document.getElementById('formulario-alta-usuario');
-const tablaCuerpo = document.getElementById('tabla-cuerpo-usuarios');
-// ID usado en la navbar de gestiondeUsuarios.html
-const usuarioActivoSpan = document.getElementById('usuarioActivo'); 
-
-/**
- * Muestra el nombre del usuario activo en la barra de navegación.
- */
-function mostrarUsuarioActivoNav() {
-    const usuario = obtenerUsuarioActivo(); // Obtiene el objeto usuario del localStorage
+// MOSTRAR USUARIO ACTIVO EN NAVBAR
+function mostrarUsuarioActivo() {
+    const userStatus = document.getElementById('userStatus');
+    const usuario = almacenaje.obtenerUsuarioActivo();
+    
     if (usuario) {
-        usuarioActivoSpan.textContent = usuario.nombre;
+        userStatus.textContent = usuario.email;
+        userStatus.style.color = '#8ab893';
+        userStatus.style.fontWeight = '700';
     } else {
-        usuarioActivoSpan.textContent = '-NO LOGIN-';
+        userStatus.textContent = '-NO LOGIN-';
+        userStatus.style.color = '#ff4444';
+        userStatus.style.fontWeight = '400';
     }
 }
 
-/**
- * Función que actualiza el contenido de la tabla de usuarios.
- */
-function renderizarTabla() {
-    tablaCuerpo.innerHTML = ''; 
+// CARGAR TABLA DE USUARIOS
+function cargarTablaUsuarios() {
+    const tbody = document.getElementById('tablaUsuarios');
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center">Cargando...</td></tr>';
     
-    // Obtener los usuarios de LocalStorage (Persistidos)
-    const usuarios = obtenerTodosUsuariosLS(); 
-    
-    usuarios.forEach(usuario => {
-        const fila = document.createElement('tr');
-        fila.className = 'text-center';
+    try {
+        const usuarios = almacenaje.obtenerUsuarios();
         
-        fila.innerHTML = `
-            <td class="fw-bold">${usuario.nombre}</td>
-            <td>${usuario.email}</td>
-            <td>${usuario.password}</td>
-            <td>
-                <!-- Usamos data-id para identificar al usuario por su ID único -->
-                <button class="btn btn-danger btn-sm" data-id="${usuario.id}">
-                    BORRAR
-                </button>
-            </td>
-        `;
-        tablaCuerpo.appendChild(fila);
-    });
+        tbody.innerHTML = '';
+        
+        if (usuarios.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay usuarios</td></tr>';
+            return;
+        }
+        
+        usuarios.forEach(usuario => {
+            const fila = document.createElement('tr');
+            fila.className = 'text-center';
+            
+            fila.innerHTML = `
+                <td class="fw-bold">${usuario.nombre}</td>
+                <td>${usuario.email}</td>
+                <td>${usuario.password}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm btn-borrar" data-email="${usuario.email}">
+                        BORRAR
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(fila);
+        });
+        
+        agregarEventosBorrar();
+        
+        console.log('Tabla cargada:', usuarios.length, 'usuarios');
+        
+    } catch (error) {
+        console.error('Error al cargar tabla:', error);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar</td></tr>';
+    }
+}
+
+// EVENTOS DE BORRAR
+function agregarEventosBorrar() {
+    const botones = document.querySelectorAll('.btn-borrar');
     
-    // Asignar eventos de baja después de renderizar
-    document.querySelectorAll('.btn-danger').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const idUsuario = parseInt(e.target.dataset.id); 
-            gestionarBajaUsuario(idUsuario);
+    botones.forEach(boton => {
+        boton.addEventListener('click', function() {
+            const email = this.getAttribute('data-email');
+            borrarUsuario(email);
         });
     });
 }
 
-/**
- * Lógica para manejar el ALTA de un usuario (cuando se pulsa 'DAR DE ALTA')
- */
-formulario.addEventListener('submit', function(e) {
-    e.preventDefault(); 
-
-    const nombre = document.getElementById('nombreUsuario').value;
-    const email = document.getElementById('emailUsuario').value;
-    const password = document.getElementById('passwordUsuario').value;
-
-    // Llama a la función de almacenaje para guardar en LocalStorage (Persistencia)
-    guardarUsuarioLS({ nombre, email, password });
+// BORRAR USUARIO
+function borrarUsuario(email) {
+    const resultado = almacenaje.borrarUsuario(email);
     
-    // Actualizar la tabla
-    renderizarTabla();
-    
-    // Limpiar el formulario
-    formulario.reset();
-});
-
-
-/**
- * Lógica para manejar la BAJA de un usuario (Persistencia)
- */
-function gestionarBajaUsuario(id) {
-    // Usamos confirm() para la interacción requerida
-    if (confirm(`¿Estás seguro de que quieres eliminar al usuario con ID ${id}?`)) {
-        // Llama a la función de almacenaje para eliminar de LocalStorage
-        const exito = eliminarUsuarioLS(id);
-
-        if (exito) {
-            renderizarTabla();
-        } else {
-            alert(`Error: No se encontró el usuario con ID ${id}.`);
-        }
+    if (resultado.ok) {
+        cargarTablaUsuarios();
+        console.log('Usuario borrado:', email);
+    } else {
+        alert('Error al borrar usuario');
     }
 }
 
-// 4. INICIALIZACIÓN
-document.addEventListener('DOMContentLoaded', () => {
-    // Muestra el estado del login en la navbar
-    mostrarUsuarioActivoNav(); 
-    // Carga los usuarios desde LocalStorage (Persistencia)
-    renderizarTabla(); 
+// ALTA DE USUARIO
+function altaUsuario(event) {
+    event.preventDefault();
+    
+    const nombre = document.getElementById('nombre').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+    
+    if (!nombre || !email || !password) {
+        alert('Todos los campos son obligatorios');
+        return;
+    }
+    
+    const nuevoUsuario = {
+        nombre: nombre.toUpperCase(),
+        email: email,
+        password: password,
+        rol: 'usuario'
+    };
+    
+    const resultado = almacenaje.crearUsuario(nuevoUsuario);
+    
+    if (resultado.ok) {
+        cargarTablaUsuarios();
+        document.getElementById('formUsuario').reset();
+        alert('Usuario creado correctamente');
+        console.log('Usuario creado:', nuevoUsuario.email);
+    } else {
+        alert(resultado.error);
+    }
+}
+
+// INICIALIZACION
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== PAGINA USUARIOS CARGADA ===');
+    
+    mostrarUsuarioActivo();
+    
+    cargarTablaUsuarios();
+    
+    const formulario = document.getElementById('formUsuario');
+    formulario.addEventListener('submit', altaUsuario);
+    
+    console.log('Pagina lista');
 });
-
-// ============================================
-// ⭐ PROMPTS DE IA GENERATIVA UTILIZADOS:
-// ============================================
-// 1. IA: Claude - Prompt: "Cómo importar variables y funciones de otro archivo JavaScript usando import y export en módulos ES6"
-// 
-// 2. IA: Claude - Prompt: "Cómo recorrer un array de objetos con forEach y crear filas de tabla HTML dinámicamente con createElement"
-// 
-// 3. IA: Claude - Prompt: "Cómo añadir eventos click a múltiples botones generados dinámicamente usando querySelectorAll y addEventListener"
-// 
-// 4. IA: Claude - Prompt: "Cómo capturar el evento submit de un formulario con preventDefault y obtener valores de inputs por id"
-// 
-// 5. IA: Claude - Prompt: "Cómo usar data attributes en HTML y leerlos desde JavaScript con getAttribute o dataset"
-// 
-// 6. IA: Claude - Prompt: "Cómo eliminar elementos de un array por índice usando splice en JavaScript"
-
