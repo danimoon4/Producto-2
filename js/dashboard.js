@@ -1,9 +1,8 @@
-//Dashboard con Drag and Drop e IndexedDB
 import { almacenaje } from './almacenaje.js';
+
 let filtroActivo = null;
 let voluntariadosSeleccionados = [];
 
-// MOSTRAR USUARIO ACTIVO
 function mostrarUsuarioActivo() {
     const userStatus = document.getElementById('userStatus');
     const usuario = almacenaje.obtenerUsuarioActivo();
@@ -17,18 +16,14 @@ function mostrarUsuarioActivo() {
     }
 }
 
-// RENDERIZAR TARJETAS (excluye seleccionados)
 async function renderizarTarjetas() {
     const grid = document.getElementById('gridVoluntariados');
     grid.innerHTML = '<div class="col-12 text-center"><p class="text-white">Cargando...</p></div>';
     
     try {
         const voluntariados = await almacenaje.obtenerVoluntariados();
-        
-        // FILTRAR: excluir los ya seleccionados
         let voluntariosFiltrados = voluntariados.filter(v => !voluntariadosSeleccionados.includes(v.id));
         
-        // FILTRAR: aplicar filtro de tipo si está activo
         if (filtroActivo) {
             voluntariosFiltrados = voluntariosFiltrados.filter(v => v.tipo === filtroActivo);
         }
@@ -36,29 +31,22 @@ async function renderizarTarjetas() {
         grid.innerHTML = '';
         
         if (voluntariosFiltrados.length === 0) {
-            grid.innerHTML = '<div class="col-12 text-center"><p class="text-white fs-4">No hay voluntariados disponibles</p></div>';
+            grid.innerHTML = '<div class="col-12 text-center"><p class="text-white fs-4">No hay voluntariados</p></div>';
             return;
         }
         
         voluntariosFiltrados.forEach(vol => {
-            const tarjeta = crearTarjetaHTML(vol);
-            grid.innerHTML += tarjeta;
-        });
-        
-        agregarEventosDrag();
-        
-    } catch (error) {
-        console.error('Error al renderizar:', error);
-    }
-}
-
-// CREAR HTML DE TARJETA
-function crearTarjetaHTML(vol) {
-    const claseTipo = vol.tipo === 'Oferta' ? 'oferta' : 'peticion';
-    
-    return `
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card-voluntariado ${claseTipo}" draggable="true" data-id="${vol.id}">
+            const claseTipo = vol.tipo === 'Oferta' ? 'oferta' : 'peticion';
+            
+            const col = document.createElement('div');
+            col.className = 'col-12 col-md-6 col-lg-4';
+            
+            const card = document.createElement('div');
+            card.className = `card-voluntariado ${claseTipo}`;
+            card.draggable = true;
+            card.dataset.id = vol.id;
+            
+            card.innerHTML = `
                 <div class="card-body">
                     <h3 class="card-title">${vol.titulo}</h3>
                     <p class="descripcion">${vol.descripcion}</p>
@@ -67,115 +55,106 @@ function crearTarjetaHTML(vol) {
                         <div class="usuario">PUBLICADO: <strong>${vol.email}</strong></div>
                     </div>
                 </div>
-            </div>
-        </div>
-    `;
-}
-
-// EVENTOS DRAG
-function agregarEventosDrag() {
-    const tarjetas = document.querySelectorAll('.card-voluntariado[draggable="true"]');
-    
-    tarjetas.forEach(tarjeta => {
-        tarjeta.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('voluntariado-id', tarjeta.getAttribute('data-id'));
-            tarjeta.classList.add('dragging');
+            `;
+            
+            card.addEventListener('dragstart', function(e) {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', this.dataset.id);
+                this.style.opacity = '0.4';
+                console.log('Arrastrando:', this.dataset.id);
+            });
+            
+            card.addEventListener('dragend', function(e) {
+                this.style.opacity = '1';
+            });
+            
+            col.appendChild(card);
+            grid.appendChild(col);
         });
         
-        tarjeta.addEventListener('dragend', () => {
-            tarjeta.classList.remove('dragging');
-        });
-    });
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
 
-// APLICAR FILTRO
-function aplicarFiltro() {
-    renderizarTarjetas();
-    actualizarBotonesFiltro();
-}
-
-// ACTUALIZAR BOTONES FILTRO
-function actualizarBotonesFiltro() {
-    const btnOferta = document.getElementById('btnOferta');
-    const btnPeticion = document.getElementById('btnPeticion');
-    
-    btnOferta.classList.toggle('active', filtroActivo === 'Oferta');
-    btnPeticion.classList.toggle('active', filtroActivo === 'Petición');
-}
-
-// RENDERIZAR SELECCION (con formato completo)
 async function renderizarSeleccion() {
     const zona = document.getElementById('zonaSeleccion');
+    zona.innerHTML = '';
     
     if (voluntariadosSeleccionados.length === 0) {
-        zona.innerHTML = '<p class="texto-placeholder">Arrastra aqui los voluntariados que te interesan</p>';
         return;
     }
     
     const voluntariados = await almacenaje.obtenerVoluntariados();
-    zona.innerHTML = '';
     
     voluntariadosSeleccionados.forEach(id => {
         const vol = voluntariados.find(v => v.id === id);
-        if (vol) {
-            const claseTipo = vol.tipo === 'Oferta' ? 'oferta' : 'peticion';
-            
-            // Crear tarjeta con el MISMO formato que las disponibles
-            const tarjeta = document.createElement('div');
-            tarjeta.className = 'col-12 col-md-6 col-lg-4';
-            tarjeta.innerHTML = `
-                <div class="card-voluntariado ${claseTipo} seleccionada" data-id="${vol.id}">
-                    <div class="card-body">
-                        <h3 class="card-title">${vol.titulo}</h3>
-                        <p class="descripcion">${vol.descripcion}</p>
-                        <div class="info-footer">
-                            <div class="fecha">${vol.fecha}</div>
-                            <div class="usuario">PUBLICADO: <strong>${vol.email}</strong></div>
-                        </div>
-                    </div>
+        if (!vol) return;
+        
+        const claseTipo = vol.tipo === 'Oferta' ? 'oferta' : 'peticion';
+        
+        const card = document.createElement('div');
+        card.className = `card-voluntariado ${claseTipo} seleccionada`;
+        card.draggable = true;
+        card.dataset.id = vol.id;
+        
+        card.innerHTML = `
+            <div class="card-body">
+                <h3 class="card-title">${vol.titulo}</h3>
+                <p class="descripcion">${vol.descripcion}</p>
+                <div class="info-footer">
+                    <div class="fecha">${vol.fecha}</div>
+                    <div class="usuario">PUBLICADO: <strong>${vol.email}</strong></div>
                 </div>
-            `;
-            
-            // Click para quitar de selección
-            tarjeta.querySelector('.card-voluntariado').addEventListener('click', () => quitarSeleccion(id));
-            
-            zona.appendChild(tarjeta);
-        }
+            </div>
+        `;
+        
+        card.addEventListener('dragstart', function(e) {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', this.dataset.id);
+            this.style.opacity = '0.4';
+        });
+        
+        card.addEventListener('dragend', function(e) {
+            this.style.opacity = '1';
+        });
+        
+        zona.appendChild(card);
     });
 }
 
-// AGREGAR A SELECCION
+function aplicarFiltro() {
+    renderizarTarjetas();
+    const btnOferta = document.getElementById('btnOferta');
+    const btnPeticion = document.getElementById('btnPeticion');
+    btnOferta.classList.toggle('active', filtroActivo === 'Oferta');
+    btnPeticion.classList.toggle('active', filtroActivo === 'Petición');
+}
+
 async function agregarASeleccion(id) {
-    if (!voluntariadosSeleccionados.includes(id)) {
-        voluntariadosSeleccionados.push(id);
+    const idNum = parseInt(id);
+    if (!voluntariadosSeleccionados.includes(idNum)) {
+        voluntariadosSeleccionados.push(idNum);
         await almacenaje.guardarSeleccion(voluntariadosSeleccionados);
-        
-        // Re-renderizar AMBAS zonas
         await renderizarTarjetas();
         await renderizarSeleccion();
-        
-        console.log('Voluntariado agregado:', id);
+        console.log('Agregado:', idNum);
     }
 }
 
-// QUITAR DE SELECCION
 async function quitarSeleccion(id) {
-    voluntariadosSeleccionados = voluntariadosSeleccionados.filter(vId => vId !== id);
+    const idNum = parseInt(id);
+    voluntariadosSeleccionados = voluntariadosSeleccionados.filter(vId => vId !== idNum);
     await almacenaje.guardarSeleccion(voluntariadosSeleccionados);
-    
-    // Re-renderizar AMBAS zonas
     await renderizarTarjetas();
     await renderizarSeleccion();
-    
-    console.log('Voluntariado quitado:', id);
+    console.log('Quitado:', idNum);
 }
 
-// INICIALIZACION
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('=== DASHBOARD CARGADO ===');
+    console.log('Iniciando dashboard');
     
     await almacenaje.inicializarVoluntariadosEjemplo();
-    
     mostrarUsuarioActivo();
     
     voluntariadosSeleccionados = await almacenaje.obtenerSeleccion();
@@ -183,37 +162,53 @@ document.addEventListener('DOMContentLoaded', async function() {
     await renderizarTarjetas();
     await renderizarSeleccion();
     
-    const btnOferta = document.getElementById('btnOferta');
-    const btnPeticion = document.getElementById('btnPeticion');
+    // Zona de seleccion
+    const zonaSeleccion = document.getElementById('zonaSeleccion');
     
-    btnOferta.addEventListener('click', () => {
+    zonaSeleccion.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        this.style.backgroundColor = 'rgba(138, 184, 147, 0.2)';
+    });
+    
+    zonaSeleccion.addEventListener('dragleave', function(e) {
+        this.style.backgroundColor = '';
+    });
+    
+    zonaSeleccion.addEventListener('drop', async function(e) {
+        e.preventDefault();
+        this.style.backgroundColor = '';
+        const id = e.dataTransfer.getData('text/plain');
+        await agregarASeleccion(id);
+    });
+    
+    // Grid disponibles
+    const gridDisponibles = document.getElementById('gridVoluntariados');
+    
+    gridDisponibles.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    });
+    
+    gridDisponibles.addEventListener('drop', async function(e) {
+        e.preventDefault();
+        const id = e.dataTransfer.getData('text/plain');
+        
+        if (voluntariadosSeleccionados.includes(parseInt(id))) {
+            await quitarSeleccion(id);
+        }
+    });
+    
+    // Filtros
+    document.getElementById('btnOferta').addEventListener('click', function() {
         filtroActivo = filtroActivo === 'Oferta' ? null : 'Oferta';
         aplicarFiltro();
     });
     
-    btnPeticion.addEventListener('click', () => {
+    document.getElementById('btnPeticion').addEventListener('click', function() {
         filtroActivo = filtroActivo === 'Petición' ? null : 'Petición';
         aplicarFiltro();
     });
     
-    const zonaSeleccion = document.getElementById('zonaSeleccion');
-    
-    zonaSeleccion.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        zonaSeleccion.classList.add('drag-over');
-    });
-    
-    zonaSeleccion.addEventListener('dragleave', () => {
-        zonaSeleccion.classList.remove('drag-over');
-    });
-    
-    zonaSeleccion.addEventListener('drop', async (e) => {
-        e.preventDefault();
-        zonaSeleccion.classList.remove('drag-over');
-        
-        const id = parseInt(e.dataTransfer.getData('voluntariado-id'));
-        await agregarASeleccion(id);
-    });
-    
-    console.log('Dashboard iniciado');
+    console.log('Dashboard listo');
 });

@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Animal Care</title>
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap para el diseño -->
     <link 
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
         rel="stylesheet"
     >
 
-    <!-- Google Fonts - Poppins -->
+    <!-- Fuente Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link 
@@ -19,15 +19,13 @@
         rel="stylesheet"
     >
 
-    <!-- CSS Común -->
+    <!-- Estilos propios -->
     <link rel="stylesheet" href="css/common.css">
-    
-    <!-- CSS Específico del Dashboard -->
     <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
 
-    <!-- Navbar -->
+    <!-- Menu de navegacion -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">ANIMAL CARE</a>
@@ -55,13 +53,13 @@
         </div>
     </nav>
 
-    <!-- HERO SECTION CON IMAGEN DE FONDO -->
+    <!-- Hero con imagen de fondo -->
     <section class="hero-section">
         <div class="hero-overlay"></div>
         <div class="hero-content">
             <h1 class="hero-title">ANIMAL CARE</h1>
             
-            <!-- BOTONES DE FILTRO -->
+            <!-- Botones para filtrar -->
             <div class="filter-buttons">
                 <button id="btnOferta" class="btn-filter btn-oferta" type="button">
                     OFERTA
@@ -73,31 +71,25 @@
         </div>
     </section>
 
-    <!-- CONTENEDOR PRINCIPAL -->
     <main class="container my-4">
         
-        <!-- TARJETAS DISPONIBLES -->
+        <!-- Voluntariados disponibles -->
         <section class="mb-5">
             <h2 class="text-center text-white mb-4">VOLUNTARIADOS DISPONIBLES</h2>
-            <div id="gridVoluntariados" class="row g-4">
-                <!-- Las tarjetas se generan dinamicamente -->
-            </div>
+            <div id="gridVoluntariados" class="row g-4"></div>
         </section>
 
-        <!-- ZONA DE SELECCION (DROP ZONE) -->
+        <!-- Zona donde se arrastran los seleccionados -->
         <section>
             <h2 class="text-center text-white mb-4">MIS VOLUNTARIADOS SELECCIONADOS</h2>
             <div id="zonaSeleccion" class="zona-seleccion">
-                <p class="texto-placeholder">Arrastra aqui los voluntariados que te interesan</p>
+                <!-- Las tarjetas se agregan aqui -->
             </div>
         </section>
 
     </main>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- JavaScript como módulo -->
     <script type="module" src="js/dashboard.js"></script>
 
 </body>
