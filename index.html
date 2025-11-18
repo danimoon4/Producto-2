@@ -67,17 +67,31 @@
                     OFERTA
                 </button>
                 <button id="btnPeticion" class="btn-filter btn-peticion" type="button">
-                    PETICIÓN
+                    PETICION
                 </button>
             </div>
         </div>
     </section>
 
-    <!-- CONTENEDOR DE TARJETAS -->
+    <!-- CONTENEDOR PRINCIPAL -->
     <main class="container my-4">
-        <div id="gridVoluntariados" class="row g-4">
-            <!-- Las tarjetas se generarán dinámicamente con JavaScript -->
-        </div>
+        
+        <!-- TARJETAS DISPONIBLES -->
+        <section class="mb-5">
+            <h2 class="text-center text-white mb-4">VOLUNTARIADOS DISPONIBLES</h2>
+            <div id="gridVoluntariados" class="row g-4">
+                <!-- Las tarjetas se generan dinamicamente -->
+            </div>
+        </section>
+
+        <!-- ZONA DE SELECCION (DROP ZONE) -->
+        <section>
+            <h2 class="text-center text-white mb-4">MIS VOLUNTARIADOS SELECCIONADOS</h2>
+            <div id="zonaSeleccion" class="zona-seleccion">
+                <p class="texto-placeholder">Arrastra aqui los voluntariados que te interesan</p>
+            </div>
+        </section>
+
     </main>
 
     <!-- Bootstrap JS -->
@@ -88,17 +102,3 @@
 
 </body>
 </html>
-
-<!--  
-    1. IA: Claude - Prompt: "Cómo crear una sección hero con imagen de fondo usando Bootstrap 5 y CSS, con overlay oscuro para mejorar legibilidad del texto"
-
-    2. IA: Claude - Prompt: "Cómo crear botones de filtro personalizados con estados activo/inactivo usando JavaScript y clases CSS dinámicas"
-    
-    3. IA: Claude - Prompt: "Cómo crear un grid responsive con Bootstrap que muestre tarjetas en 3 columnas en desktop, 2 en tablet y 1 en móvil"
-    
-    4. IA: Claude - Prompt: "Cómo aplicar background-image en CSS con overlay semitransparente y posicionamiento fixed para efecto parallax"
-    
-    5. IA: Claude - Prompt: "Cómo filtrar un array de objetos en JavaScript por propiedad tipo y renderizar solo los elementos filtrados dinámicamente"
-    
-    6. IA: Claude - Prompt: "Cómo crear tarjetas con bordes de colores diferentes según una propiedad del objeto usando clases CSS condicionales en JavaScript"
--->
