@@ -50,7 +50,9 @@
                         <a class="nav-link" href="../pages/usuarios.html">ALTA USUARIO</a>
                     </li>
                 </ul>
-                <span class="navbar-text" id="userStatus">-NO LOGIN-</span>
+                <span class="navbar-text">
+                    USUARIO: <strong id="usuarioActivoLabel">NO LOGIN</strong>
+                </span>
             </div>
         </div>
     </nav>
@@ -82,9 +84,8 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="usuario" class="form-label">USUARIO</label>
-                                <input type="text" class="form-control"
-                                    id="usuario" name="usuario" required>
+                                <label for="email" class="form-label">EMAIL</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
                             </div>
                             
                             <div class="mb-3">
@@ -103,14 +104,17 @@
                                 <label for="tipo" class="form-label">TIPO</label>
                                 <select class="form-select" 
                                         id="tipo" name="tipo" required>
-                                    <option value="peticion" selected>PETICIÓN</option>
-                                    <option value="oferta">OFERTA</option>
+                                    <option value="Petición" selected>PETICIÓN</option>
+                                    <option value="Oferta">OFERTA</option>
                                 </select>
                             </div>
                             
                             <div class="text-center">
                                 <button type="submit" class="btn btn-primary">DAR DE ALTA</button>
                             </div>
+
+                            <!-- Alerta de feedback -->
+                            <div id="alerta" class="alert mt-3 d-none" role="alert"></div>
                             
                         </form>
                     </div>
@@ -127,7 +131,7 @@
                                 <thead>
                                     <tr class="text-center">
                                         <th>TÍTULO</th>
-                                        <th>USUARIO</th>
+                                        <th>EMAIL</th>
                                         <th>FECHA</th>
                                         <th>DESCRIPCIÓN</th>
                                         <th>TIPO</th>
@@ -135,7 +139,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tablaVoluntariados">
-                                    <!-- Las filas se generarán dinámicamente con JavaScript -->
                                 </tbody>
                             </table>
                         </div>
@@ -145,6 +148,20 @@
             </div>
 
             
+        </div>
+
+        <!-- SECCIÓN DE GRÁFICO -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card text-white">
+                    <div class="card-body">
+                        <h3 class="card-title text-center mb-4">GRÁFICO DE VOLUNTARIADOS</h3>
+                        <div class="d-flex justify-content-center">
+                            <canvas id="graficoVoluntariados" width="800" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -160,16 +177,3 @@
 </body>
 </html>
 
-<!--  
-    1. IA: Claude - Prompt: "Cómo crear una estructura básica HTML5 con Bootstrap 5? Necesito solo el head con los enlaces de Bootstrap y la fuente Poppins de Google Fonts"
-
-    2. IA: Claude - Prompt: "Cómo crear un navbar de Bootstrap con fondo oscuro que tenga 4 enlaces: Dashboard, Login, Voluntariados, Alta Usuario? Y a la derecha debe mostrar el estado de login"
-    
-    3. IA: Claude - Prompt: "cómo crear un formulario con Bootstrap que tenga campos de texto, textarea, select y un botón de envío?"
-    
-    4. IA: Claude - Prompt: "cómo crear una tabla responsive con Bootstrap que muestre datos dinámicos y tenga botones de acción en cada fila"
-    
-    5. IA: Claude - Prompt: "cómo conectar un archivo javascript externo a mi html usando módulos ES6? necesito importar datos desde otro archivo js"
-    
-    6. IA: Claude - Prompt: "cómo hacer que al cargar la página se muestren automáticamente datos de un array en una tabla html usando javascript?"
--->
