@@ -1,84 +1,89 @@
-// login.js - LÓGICA DE INICIO DE SESIÓN
+import { almacenaje } from './almacenaje.js';
 
-// Verifica credenciales y actualiza el navbar
+// MOSTRAR USUARIO ACTIVO
+// Muestra el email del usuario activo o -no login-
+function mostrarUsuarioActivo() {
+    const userStatus = document.getElementById('userStatus');
+    const usuario = almacenaje.obtenerUsuarioActivo();
+    
+    if (usuario) {
+        // Si hay usuario activo, mostrar su email
+        userStatus.textContent = usuario.email;
+        userStatus.style.color = '#8ab893';
+        userStatus.style.fontWeight = '700';
+    } else {
+        // Si no hay usuario activo, mostrar -no login-
+        userStatus.textContent = '-NO LOGIN-';
+        userStatus.style.color = '#ff4444';
+        userStatus.style.fontWeight = '400';
+    }
+}
 
-// Importamos los usuarios desde datos.js
-import { usuarios } from './datos.js';
-
-//  REFERENCIAS A ELEMENTOS DEL DOM
-
-const formLogin = document.getElementById('formLogin');
-const mensajeError = document.getElementById('mensajeError');
-const userStatus = document.getElementById('userStatus');
-
-// 
-// Comprueba si el email y password coinciden con algún usuario
-function verificarLogin(event) {
+// INICIO DE SESION
+// Maneja el evento de clic en el boton de inicio de sesion
+function manejarLogin(event) {
+    // Previene el comportamiento por defecto del formulario
     event.preventDefault();
     
-    // Obtener valores del formulario
-    const email = document.getElementById('emailLogin').value;
-    const password = document.getElementById('passwordLogin').value;
+    // Obtiene los valores de los campos de correo y contraseña
+    const email = document.getElementById('emailLogin').value.trim();
+    const password = document.getElementById('passwordLogin').value.trim();
+    const mensajeError = document.getElementById('mensajeError');
     
-    // Buscar usuario en el array
-    const usuarioEncontrado = usuarios.find(user => 
-        user.email === email && user.password === password
-    );
+    // Validacion basica
+    if (!email || !password) {
+        mensajeError.textContent = 'Todos los campos son obligatorios';
+        mensajeError.classList.remove('d-none');
+        return;
+    }
     
-    if (usuarioEncontrado) {
-        // Login exitoso
-        console.log('Login exitoso:', usuarioEncontrado.nombre);
+    // Llama a loguearUsuario con los valores obtenidos
+    // Usa almacenaje.loguearUsuario para autenticar
+    const resultado = almacenaje.loguearUsuario(email, password);
+    
+    // Muestra alerta de exito o error segun el resultado
+    if (resultado.ok) {
+        // LOGIN EXITOSO
+        console.log('Login exitoso:', resultado.user.nombre);
         
-        // Guardar usuario en localStorage
-        localStorage.setItem('usuarioLogueado', JSON.stringify(usuarioEncontrado));
-        
-        // Ocultar mensaje de error si estaba visible
+        // Ocultar mensaje de error
         mensajeError.classList.add('d-none');
         
-        // Actualizar el navbar con el nombre del usuario
-        userStatus.textContent = `HOLA ${usuarioEncontrado.nombre}`;
-        userStatus.style.color = '#4CAF50';
-        userStatus.style.fontWeight = '700';
+        // El email ya se guardo en localStorage (lo hace loguearUsuario)
+        // Actualizar el navbar con el usuario activo
+        mostrarUsuarioActivo();
         
-        // Limpiar el formulario
-        formLogin.reset();
+        // Limpiar formulario
+        document.getElementById('formLogin').reset();
+        
+        // Mostrar mensaje de exito y redirigir
+        alert('Inicio de sesión exitoso.');
+        
+        setTimeout(() => {
+            window.location.href = '../index.html';
+        }, 1000);
         
     } else {
-        // Login fallido
-        console.log('Login fallido: credenciales incorrectas');
+        // LOGIN FALLIDO
+        console.log('Login fallido:', resultado.error);
         
         // Mostrar mensaje de error
+        mensajeError.textContent = resultado.error;
         mensajeError.classList.remove('d-none');
     }
 }
 
-//  INICIALIZACIÓN AL CARGAR LA PÁGINA
-
+// EVENTO DOMContentLoaded
+// Configura el comportamiento de la pagina cuando se carga
 document.addEventListener('DOMContentLoaded', function() {
-    // Registrar evento del formulario
-    formLogin.addEventListener('submit', verificarLogin);
+    console.log('=== PAGINA LOGIN CARGADA ===');
     
-    // Verificar si ya hay un usuario logueado
-    const usuarioLogueado = localStorage.getItem('usuarioLogueado');
-    if (usuarioLogueado) {
-        const usuario = JSON.parse(usuarioLogueado);
-        userStatus.textContent = `HOLA ${usuario.nombre}`;
-        userStatus.style.color = '#4CAF50';
-        userStatus.style.fontWeight = '700';
-    }
+    // Llama a mostrarUsuarioActivo para mostrar el usuario activo al cargar
+    mostrarUsuarioActivo();
     
-    console.log('Página de login cargada');
-    console.log('Usuarios disponibles:', usuarios.length);
+    // Añade un evento de clic al boton de inicio de sesion
+    const formLogin = document.getElementById('formLogin');
+    formLogin.addEventListener('submit', manejarLogin);
+    
+    console.log('Pagina lista');
 });
-
-
-// 1. IA: Claude - Prompt: "Cómo buscar un objeto en un array de JavaScript usando find() con múltiples condiciones"
-// 
-// 2. IA: Claude - Prompt: "Cómo guardar objetos JavaScript en localStorage usando JSON.stringify"
-// 
-// 3. IA: Claude - Prompt: "Cómo actualizar el contenido de texto de un elemento HTML usando template literals para mostrar saludos personalizados"
-// 
-// 4. IA: Claude - Prompt: "Cómo mostrar y ocultar elementos HTML añadiendo y quitando la clase d-none de Bootstrap"
-// 
-// 5. IA: Claude - Prompt: "Cómo cambiar estilos CSS dinámicamente usando la propiedad style en JavaScript"
-// 6. IA: Claude - Prompt: "Cómo prevenir el comportamiento por defecto de un formulario con preventDefault y limpiar inputs con reset"
